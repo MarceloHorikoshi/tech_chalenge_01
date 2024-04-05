@@ -1,0 +1,24 @@
+# dataframe
+openpyxl==3.1.1
+pandas==2.1.1
+
+# requisicoes
+requests==2.31.0
+
+# FastAPI
+fastapi==0.101.1
+pydantic==1.10.4
+uvicorn==0.23.2
+
+# hora local
+pytz==2023.3
+
+# requisicao
+python-multipart==0.0.6
+#requests==2.31.0
+
+# textos
+unidecode==1.3.8
+
+# variaveis de ambiente local
+python-dotenv~=1.0.0
