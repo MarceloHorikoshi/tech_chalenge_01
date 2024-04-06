@@ -1,82 +1,14 @@
-import logging
-import json
-import pandas
-import pandas as pd
-import requests
+from typing import Optional, List
+from fastapi import FastAPI, Query
 
-from fastapi import FastAPI
-from unidecode import unidecode
+from utils.tratamento_dicionarios import query_json, transformar_em_formato, dataframe_para_json
+from utils.importacao_dados import download_tabela, leitura_bytes
 
 app = FastAPI()
 
+url_producao = 'http://vitibrasil.cnpuv.embrapa.br/download/Producao.csv'
+
 separador = ';'
-
-def corrigir_caracteres(valor):
-    if isinstance(valor, str):  # Verifica se o valor é uma string
-        valor.replace("Ã¢", "â").replace("Ã§Ã£", "ç").replace("Ãª", "ê").replace("Ã£", "ã")
-        valor = unidecode(valor)
-        return valor
-
-    else:
-        return valor
-
-def dataframe_para_json(dataframe: pandas.DataFrame) -> dict:
-    # Converte o DataFrame para JSON
-    json_resultado = dataframe.to_json(orient='records')
-
-    json_resultado = json.loads(json_resultado)
-    return json_resultado
-
-def download_arquivo(url: str, nome_arquivo: str) -> str:
-    diretorio_download = './embrapa_tables/'
-    arquivo_baixado = diretorio_download+nome_arquivo
-    # requisicao get para obter arquivo
-    resposta = requests.get(url)
-
-    if resposta.status_code == 200:
-        with open(arquivo_baixado, 'wb') as arquivo:
-            arquivo.write(resposta.content)
-        logging.info('Download concluido com sucesso')
-
-    else:
-        logging.info('Falha download')
-
-        raise ConnectionError(f'Erro download {resposta.status_code}')
-
-    return arquivo_baixado
-
-def leitura_csv(caminho_arquivo: str, separador: str) -> pandas.DataFrame:
-    # Lê o arquivo CSV e carrega-o como um DataFrame do Pandas
-    dataframe = pd.read_csv(caminho_arquivo, sep=separador)
-
-    dataframe_corrigido = dataframe.applymap(corrigir_caracteres)
-
-    return dataframe_corrigido
-
-def transformar_em_formato(json_dados: list[dict]) -> dict:
-    # Dicionário temporário para armazenar os produtos por categoria
-    result_json_formatado = []
-    categoria_atual = None
-
-    for item in json_dados:
-        if str(item['produto']).isupper():
-            # Se o produto está em maiúsculo, é uma nova categoria
-            if categoria_atual:
-                # Se já havia uma categoria, adicionamos ela ao resultado
-                result_json_formatado.append(categoria_atual)
-
-            # Inicializamos uma nova categoria
-            categoria_atual = item.copy()
-            categoria_atual['lista_produtos'] = []
-        else:
-            # Adicionamos o produto à lista de produtos da categoria atual
-            categoria_atual['lista_produtos'].append(item)
-
-        # Adicionamos a última categoria ao resultado
-    if categoria_atual:
-        result_json_formatado.append(categoria_atual)
-
-    return result_json_formatado
 
 
 @app.get('/')
@@ -84,16 +16,50 @@ async def root():
     return {'message': 'Hello World'}
 
 
-@app.get('/producao')
-async def producao():
-    url_producao = 'http://vitibrasil.cnpuv.embrapa.br/download/Producao.csv'
-    nome_arquivo = 'producao.csv'
+@app.get('/producao/filtragem')
+async def filtrar_producao(
+        categoria: Optional[str] = Query(None, description="Filtrar por categoria"),
+        nome_produto: Optional[str] = Query(None, description="Filtrar por nome do produto"),
+        ano_producao: Optional[List[int]] = Query([], description="Filtrar por ano de produção")
+):
+    # carrega dados do site em um dataframe
+    df = leitura_bytes(
+        download_tabela(url=url_producao),
+        separador=separador
+    )
 
-    df = leitura_csv(
-        download_arquivo(
-            url=url_producao,
-            nome_arquivo=nome_arquivo
-        ),
+    dict_transformado = transformar_em_formato(
+        json_dados=dataframe_para_json(dataframe=df)
+    )
+
+    # query para buscar a categoria, produto e ano passado
+    dict_final = query_json(json_list=dict_transformado,
+                            categoria=categoria,
+                            sub_categoria=nome_produto,
+                            ano_producao=ano_producao
+                            )
+
+    return dict_final
+
+
+@app.get('/producao/{id_prod}')
+async def detalhar_producao_id(id_prod: int):
+    # carrega dados do site em um dataframe
+    df = leitura_bytes(
+        download_tabela(url=url_producao),
+        separador=separador
+    )
+
+    # transforma dataframe para json e faz uma query para buscar o id passado
+    dict_final = dataframe_para_json(dataframe=df.query(f'id == {id_prod}'))[0]
+
+    return dict_final
+
+
+@app.get('/producao')
+async def listar_producao_total():
+    df = leitura_bytes(
+        download_tabela(url=url_producao),
         separador=separador
     )
 
@@ -102,4 +68,3 @@ async def producao():
     )
 
     return dict_final
-
