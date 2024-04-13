@@ -31,12 +31,21 @@ def download_tabela(url: str) -> bytes:
     return arquivo_baixado
 
 
-def leitura_bytes(arquivo_bytes: bytes, separador: str) -> pd.DataFrame:
+def limpar_titulos(titulo):
+    return unidecode(titulo)
+
+
+def leitura_bytes(arquivo_bytes: bytes, separador: str, nome_tabela, skiprows=None) -> pd.DataFrame:
     # Crie um buffer de bytes
     buffer_bytes = io.BytesIO(arquivo_bytes)
 
     # Use pd.read_csv com o buffer de bytes
-    df = pd.read_csv(buffer_bytes, sep=separador)
+    df = pd.read_csv(buffer_bytes, sep=separador, skiprows=skiprows)
+
+    if nome_tabela == 'importacao':
+        df.columns = [limpar_titulos(str(titulo).lower()) for titulo in df.columns]
+
+    df = df.fillna(0)
 
     dataframe_corrigido = df.applymap(corrigir_caracteres)
 
