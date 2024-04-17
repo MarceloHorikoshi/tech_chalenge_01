@@ -5,14 +5,20 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 
 from db.database import SessionLocal
-from api_interface.models import ProcessamentoBase
 
+from utils.authentication import get_current_user
 from utils.funcionaliades_banco import insercao_dados, limpa_tabela
 from utils.tratamento_dados_tabela import transformar_em_formato, dataframe_para_json
 from utils.importacao_dados import download_tabela, leitura_bytes
 from utils.tratamento_dados_tabela import cria_organiza_colunas, trata_df_sem_colunas
 
 url_comercializacao = 'http://vitibrasil.cnpuv.embrapa.br/download/Comercio.csv'
+
+url_exportacao_vinhos_mesa = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpVinho.csv'
+url_exportacao_espumante = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpEspumantes.csv'
+url_exportacao_uvas_frescas = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpUva.csv'
+url_exportacao_suco_uva = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpSuco.csv'
+
 
 url_importacao_vinhos_mesa = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpVinhos.csv'
 url_importacao_espumante = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpEspumantes.csv'
@@ -42,6 +48,7 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
 class Inicializacao:
@@ -65,13 +72,11 @@ class Inicializacao:
         limpa_tabela(db, self.nome_tabela)
 
         for link in self.lista_links:
-            print(link)
             df = leitura_bytes(
                 download_tabela(url=link['url']),
                 separador=self.separador,
                 nome_tabela=self.nome_tabela
             )
-
 
             if not df.empty:
                 if self.drop_column is not None:
@@ -90,11 +95,7 @@ class Inicializacao:
                         coluna_principal=self.nome_coluna
                     )
 
-                # if self.nome_tabela == 'importacao':
-                #     novas_colunas = ['quantidade', 'valor']
-                #     df = cria_organiza_colunas(df)
-
-                if self.nome_tabela == 'importacao':
+                if self.nome_tabela == 'exportacao' or self.nome_tabela == 'importacao':
                     dict_final = dataframe_para_json(dataframe=df)
                 else:
                     dict_final = transformar_em_formato(
@@ -112,7 +113,14 @@ class Inicializacao:
 
 
 @router.get('/inicializacao', status_code=status.HTTP_201_CREATED)
-async def total_processamento(db: db_dependency):
+async def total_processamento(
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='Falha autentificacao')
     try:
         lista_json_insercao = [
 
@@ -122,6 +130,18 @@ async def total_processamento(db: db_dependency):
                 'drop_table': None,
                 'lista_links': [
                     {'super_categoria': None, 'url': url_comercializacao},
+                ],
+                'separador': ';'
+            },
+            {
+                'nome_tabela': 'exportacao',
+                'nome_coluna': 'pais',
+                'drop_table': None,
+                'lista_links': [
+                    {'super_categoria': 'Vinho_Mesa', 'url': url_exportacao_vinhos_mesa},
+                    {'super_categoria': 'Espumante', 'url': url_exportacao_espumante},
+                    {'super_categoria': 'Uvas_frescas', 'url': url_exportacao_uvas_frescas},
+                    {'super_categoria': 'Suco_uva', 'url': url_exportacao_suco_uva},
                 ],
                 'separador': ';'
             },

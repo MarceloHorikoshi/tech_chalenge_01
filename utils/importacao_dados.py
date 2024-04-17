@@ -42,7 +42,7 @@ def leitura_bytes(arquivo_bytes: bytes, separador: str, nome_tabela, skiprows=No
     # Use pd.read_csv com o buffer de bytes
     df = pd.read_csv(buffer_bytes, sep=separador, skiprows=skiprows)
 
-    if nome_tabela == 'importacao':
+    if nome_tabela == 'exportacao' or nome_tabela == 'importacao':
         df.columns = [limpar_titulos(str(titulo).lower()) for titulo in df.columns]
 
     df = df.fillna(0)

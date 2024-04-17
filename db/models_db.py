@@ -12,10 +12,21 @@ class Comercializacao(Base):
     litros_comercializacao = Column(Float(50, 2))
 
 
-class Importacao(Base):
-    __tablename__ = 'importacao'
+class Exportacao(Base):
+    __tablename__ = 'exportacao'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement='auto')
+    categoria = Column(String(50))
+    nome = Column(String(50))
+    ano = Column(String(50))
+    quantidade = Column(Integer)
+    valor = Column(Float(50, 2))
+
+
+class Importacao(Base):
+    __tablename__ = 'importacao'
+    id: int = Column(Integer, primary_key=True, index=True, autoincrement='auto')
+    # id = Column(Integer, primary_key=True, index=True, autoincrement='auto')
     categoria = Column(String(50))
     nome = Column(String(50))
     ano = Column(String(50))
@@ -44,11 +55,9 @@ class Producao(Base):
     valor_producao = Column(Float(50, 2))
 
 
-
-
-
 class User(Base):
     __tablename__ = 'users'
 
     id = Column(Integer, primary_key=True, index=True, autoincrement='auto')
     username = Column(String(50), unique=True)
+    hashed_password = Column(String(100))

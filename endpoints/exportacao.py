@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Annotated
 
 from db.database import SessionLocal
-from api_interface.models import ProcessamentoBase
+from api_interface.models import ExportacaoBase
 from utils.authentication import get_current_user
 
 
@@ -24,9 +24,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
-@router.get('/processamento/filtragem')
-async def filtrar_processamento(
-        processamento: ProcessamentoBase,
+@router.get('/exportacao/filtragem')
+async def filtrar_importacao(
+        exportacao: ExportacaoBase,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
@@ -36,31 +36,31 @@ async def filtrar_processamento(
                             detail='Falha autentificacao')
 
     try:
-        query = db.query(models.Processamento)
+        query = db.query(models.Importacao)
 
         # Adiciona filtro pelo ID se fornecido
-        if processamento.id is not None:
-            query = query.filter(models.Processamento.id == processamento.id)
+        if exportacao.id is not None:
+            query = query.filter(models.Importacao.id == exportacao.id)
 
         # Adiciona filtro pela categoria se fornecida
-        if processamento.categoria is not None:
-            query = query.filter(models.Processamento.categoria == processamento.categoria)
-
-        # Adiciona filtro pela sub_categoria se fornecido
-        if processamento.sub_categoria is not None:
-            query = query.filter(models.Processamento.sub_categoria == processamento.sub_categoria)
+        if exportacao.categoria is not None:
+            query = query.filter(models.Importacao.categoria == exportacao.categoria)
 
         # Adiciona filtro pelo nome se fornecido
-        if processamento.nome is not None:
-            query = query.filter(models.Processamento.nome == processamento.nome)
+        if exportacao.nome is not None:
+            query = query.filter(models.Importacao.nome == exportacao.nome)
 
         # Adiciona filtro pelo ano se fornecido
-        if processamento.ano is not None:
-            query = query.filter(models.Processamento.ano == processamento.ano)
+        if exportacao.ano is not None:
+            query = query.filter(models.Importacao.ano == exportacao.ano)
 
         # Adiciona filtro pelo valor de produção se fornecido
-        if processamento.valor_producao is not None:
-            query = query.filter(models.Processamento.valor_producao == processamento.valor_producao)
+        if exportacao.quantidade is not None:
+            query = query.filter(models.Importacao.quantidade == exportacao.quantidade)
+
+        # Adiciona filtro pelo valor de produção se fornecido
+        if exportacao.valor is not None:
+            query = query.filter(models.Importacao.valor == exportacao.valor)
 
         # Executa a consulta e retorna os resultados
         return query.all()
@@ -70,9 +70,9 @@ async def filtrar_processamento(
         raise HTTPException(status_code=500, detail="Erro ao filtrar os dados de produção")
 
 
-@router.get('/processamento/{id_process}', status_code=status.HTTP_200_OK)
-async def processamento_id(
-        id_process: int,
+@router.get('/exportacao/{id_exportacao}', status_code=status.HTTP_200_OK)
+async def importacao_id(
+        id_exportacao: int,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
@@ -81,16 +81,15 @@ async def processamento_id(
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Falha autentificacao')
 
-    processamento = db.query(models.Processamento).filter(models.Processamento.id == id_process).first()
+    exportacao = db.query(models.Exportacao).filter(models.Exportacao.id == id_exportacao).first()
 
-    if processamento is None:
+    if exportacao is None:
         HTTPException(status_code=404, detail='id nao encontrado')
 
-    return processamento
+    return exportacao
 
-
-@router.get('/processamento', status_code=status.HTTP_200_OK)
-async def total_processamento(
+@router.get('/exportacao', status_code=status.HTTP_200_OK)
+async def total_importacao(
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
@@ -101,7 +100,7 @@ async def total_processamento(
 
     try:
         # retorna todas as linhas da tabela
-        return db.query(models.Processamento).all()
+        return db.query(models.Exportacao).all()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")

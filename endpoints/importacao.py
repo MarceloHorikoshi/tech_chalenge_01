@@ -6,6 +6,7 @@ from typing import Annotated
 
 from db.database import SessionLocal
 from api_interface.models import ImportacaoBase
+from utils.authentication import get_current_user
 
 
 router = APIRouter()
@@ -20,10 +21,19 @@ def get_db():
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
 @router.get('/importacao/filtragem')
-async def filtrar_importacao(importacao: ImportacaoBase, db: db_dependency):
+async def filtrar_importacao(
+        importacao: ImportacaoBase,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='Falha autentificacao')
 
     try:
         query = db.query(models.Importacao)
@@ -53,8 +63,7 @@ async def filtrar_importacao(importacao: ImportacaoBase, db: db_dependency):
             query = query.filter(models.Importacao.valor == importacao.valor)
 
         # Executa a consulta e retorna os resultados
-        resultados = query.all()
-        return resultados
+        return query.all()
 
     except Exception as e:
         print(e)
@@ -62,7 +71,15 @@ async def filtrar_importacao(importacao: ImportacaoBase, db: db_dependency):
 
 
 @router.get('/importacao/{id_importacao}', status_code=status.HTTP_200_OK)
-async def importacao_id(id_importacao: int, db: db_dependency):
+async def importacao_id(
+        id_importacao: int,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='Falha autentificacao')
 
     importacao = db.query(models.Importacao).filter(models.Importacao.id == id_importacao).first()
 
@@ -71,13 +88,20 @@ async def importacao_id(id_importacao: int, db: db_dependency):
 
     return importacao
 
+
 @router.get('/importacao', status_code=status.HTTP_200_OK)
-async def total_importacao(db: db_dependency):
+async def total_importacao(
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+                            detail='Falha autentificacao')
 
     try:
         # retorna todas as linhas da tabela
-        importacao = db.query(models.Importacao).all()
-        return importacao
+        return db.query(models.Importacao).all()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
