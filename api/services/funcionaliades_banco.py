@@ -1,4 +1,4 @@
-import db.models_db as models
+from api import schemas as models
 from sqlalchemy import text
 
 

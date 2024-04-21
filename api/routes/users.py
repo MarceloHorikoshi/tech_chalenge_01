@@ -1,4 +1,4 @@
-import db.models_db as models
+from api import schemas as models
 
 from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException
@@ -7,10 +7,10 @@ from typing import Annotated
 from starlette import status
 from sqlalchemy.orm import Session
 
-from db.database import SessionLocal
-from db.models_db import User
+from api.schemas.database import SessionLocal
+from api.schemas.models_db import User
 
-from api_interface.models import CreateUserRequest, Token
+from api.schemas.models_api import CreateUserRequest, Token
 from utils.authentication import authenticate_user
 from utils.authentication import create_access_token
 from utils.authentication import get_current_user

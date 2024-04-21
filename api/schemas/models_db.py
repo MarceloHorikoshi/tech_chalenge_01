@@ -1,5 +1,5 @@
 from sqlalchemy import Column, Integer, String, Float
-from db.database import Base
+from api.schemas.database import Base
 
 
 class Comercializacao(Base):

@@ -29,3 +29,13 @@ unidecode==1.3.8
 
 # variaveis de ambiente local
 python-dotenv~=1.0.0
+
+
+# testes api
+httpx==0.26.0
+pytest==8.1.1
+pytest-html==4.1.1 # pytest tests --html="HTMLPytestReport.html"
+
+# cobertura de testes:
+coverage==7.4.4 # coverage run -m pytest
+pytest-cov==5.0.0 # coverage html

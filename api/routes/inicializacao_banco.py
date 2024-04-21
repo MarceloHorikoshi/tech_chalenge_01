@@ -1,40 +1,21 @@
-import db.models_db as models
+from api import schemas as models
+import os
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from db.database import SessionLocal
+from api.schemas.database import SessionLocal
 
 from utils.authentication import get_current_user
 from utils.funcionaliades_banco import insercao_dados, limpa_tabela
 from utils.tratamento_dados_tabela import transformar_em_formato, dataframe_para_json
-from utils.importacao_dados import download_tabela, leitura_bytes
-from utils.tratamento_dados_tabela import cria_organiza_colunas, trata_df_sem_colunas
+from api.dependencies.importacao_dados import download_tabela, leitura_bytes
+from utils.tratamento_dados_tabela import trata_df_sem_colunas
 
-url_comercializacao = 'http://vitibrasil.cnpuv.embrapa.br/download/Comercio.csv'
+from dotenv import load_dotenv
 
-url_exportacao_vinhos_mesa = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpVinho.csv'
-url_exportacao_espumante = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpEspumantes.csv'
-url_exportacao_uvas_frescas = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpUva.csv'
-url_exportacao_suco_uva = 'http://vitibrasil.cnpuv.embrapa.br/download/ExpSuco.csv'
-
-
-url_importacao_vinhos_mesa = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpVinhos.csv'
-url_importacao_espumante = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpEspumantes.csv'
-url_importacao_uvas_frescas = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpFrescas.csv'
-url_importacao_uvas_passas = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpPassas.csv'
-url_importacao_suco_uva = 'http://vitibrasil.cnpuv.embrapa.br/download/ImpSuco.csv'
-
-
-url_processamento_viniferas = 'http://vitibrasil.cnpuv.embrapa.br/download/ProcessaViniferas.csv'
-url_processamento_americanas = 'http://vitibrasil.cnpuv.embrapa.br/download/ProcessaAmericanas.csv'
-url_processamento_mesa = 'http://vitibrasil.cnpuv.embrapa.br/download/ProcessaMesa.csv'
-url_processamento_outras = 'http://vitibrasil.cnpuv.embrapa.br/download/ProcessaSemclass.csv'
-
-url_producao = 'http://vitibrasil.cnpuv.embrapa.br/download/Producao.csv'
-
-separador_t = '\t'
+load_dotenv()
 
 router = APIRouter()
 
@@ -129,7 +110,7 @@ async def total_processamento(
                 'nome_coluna': 'produto',
                 'drop_table': None,
                 'lista_links': [
-                    {'super_categoria': None, 'url': url_comercializacao},
+                    {'super_categoria': None, 'url': os.environ.get('URL_COMERCIALIZACAO')},
                 ],
                 'separador': ';'
             },
@@ -138,10 +119,10 @@ async def total_processamento(
                 'nome_coluna': 'pais',
                 'drop_table': None,
                 'lista_links': [
-                    {'super_categoria': 'Vinho_Mesa', 'url': url_exportacao_vinhos_mesa},
-                    {'super_categoria': 'Espumante', 'url': url_exportacao_espumante},
-                    {'super_categoria': 'Uvas_frescas', 'url': url_exportacao_uvas_frescas},
-                    {'super_categoria': 'Suco_uva', 'url': url_exportacao_suco_uva},
+                    {'super_categoria': 'Vinho_Mesa', 'url': os.environ.get('URL_EXPORTACAO_VINHOS_MESA')},
+                    {'super_categoria': 'Espumante', 'url': os.environ.get('URL_EXPORTACAO_ESPUMANTE')},
+                    {'super_categoria': 'Uvas_frescas', 'url': os.environ.get('URL_EXPORTACAO_UVAS_FRESCAS')},
+                    {'super_categoria': 'Suco_uva', 'url': os.environ.get('URL_EXPORTACAO_SUCO_UVA')},
                 ],
                 'separador': ';'
             },
@@ -150,11 +131,11 @@ async def total_processamento(
                 'nome_coluna': 'pais',
                 'drop_table': None,
                 'lista_links': [
-                    {'super_categoria': 'Vinho_Mesa', 'url': url_importacao_vinhos_mesa},
-                    {'super_categoria': 'Espumante', 'url': url_importacao_espumante},
-                    {'super_categoria': 'Uvas_frescas', 'url': url_importacao_uvas_frescas},
-                    {'super_categoria': 'Uvas_passas', 'url': url_importacao_uvas_passas},
-                    {'super_categoria': 'Suco_uva', 'url': url_importacao_suco_uva},
+                    {'super_categoria': 'Vinho_Mesa', 'url': os.environ.get('URL_IMPORTACAO_VINHOS_MESA')},
+                    {'super_categoria': 'Espumante', 'url': os.environ.get('URL_IMPORTACAO_ESPUMANTE')},
+                    {'super_categoria': 'Uvas_frescas', 'url': os.environ.get('URL_IMPORTACAO_UVAS_FRESCAS')},
+                    {'super_categoria': 'Uvas_passas', 'url': os.environ.get('URL_IMPORTACAO_UVAS_PASSAS')},
+                    {'super_categoria': 'Suco_uva', 'url': os.environ.get('URL_IMPORTACAO_SUCO_UVA')},
                 ],
                 'separador': ';'
             },
@@ -163,10 +144,10 @@ async def total_processamento(
                 'nome_coluna': 'cultivar',
                 'drop_table': 'control',
                 'lista_links': [
-                    {'super_categoria': 'Viniferas', 'url': url_processamento_viniferas},
-                    {'super_categoria': 'Americana', 'url': url_processamento_americanas},
-                    {'super_categoria': 'Mesa', 'url': url_processamento_mesa},
-                    {'super_categoria': 'Outras', 'url': url_processamento_outras},
+                    {'super_categoria': 'Viniferas', 'url': os.environ.get('URL_PROCESSAMENTO_VINIFERAS')},
+                    {'super_categoria': 'Americana', 'url': os.environ.get('URL_PROCESSAMENTO_AMERICANAS')},
+                    {'super_categoria': 'Mesa', 'url': os.environ.get('URL_PROCESSAMENTO_MESA')},
+                    {'super_categoria': 'Outras', 'url': os.environ.get('URL_PROCESSAMENTO_OUTRAS')},
                 ],
                 'separador': '\t'
             },
@@ -175,7 +156,7 @@ async def total_processamento(
                 'nome_coluna': 'produto',
                 'drop_table': None,
                 'lista_links': [
-                    {'super_categoria': None, 'url': url_producao},
+                    {'super_categoria': None, 'url': os.environ.get('URL_PRODUCAO')},
                 ],
                 'separador': ';'
             },
@@ -194,4 +175,7 @@ async def total_processamento(
 
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=500, detail=f"Erro ao obter os dados ou inserir {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Erro ao obter os dados ou inserir {e}"
+        )

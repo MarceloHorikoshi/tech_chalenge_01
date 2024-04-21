@@ -1,19 +1,12 @@
 from typing import Annotated
 from fastapi import FastAPI, Depends
 
-import db.models_db as models
-from db.database import engine, SessionLocal
+from api import schemas as models
+from api.schemas.database import engine, SessionLocal
 
 from sqlalchemy.orm import Session
 
-from endpoints import comercializacao
-from endpoints import exportacao
-from endpoints import importacao
-from endpoints import inicializacao_banco
-from endpoints import processamento
-from endpoints import producao
-from endpoints import users
-
+from api.routes import comercializacao, importacao, producao, processamento, inicializacao_banco, users, exportacao
 
 app = FastAPI()
 

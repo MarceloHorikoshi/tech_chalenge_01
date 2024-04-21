@@ -7,7 +7,7 @@ from starlette import status
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 
-from db.models_db import User
+from api.schemas.models_db import User
 
 
 SECRET_KEY = '1234teste'
