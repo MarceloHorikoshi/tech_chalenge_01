@@ -11,78 +11,83 @@ token = os.environ.get('TOKEN')
 headers = {"Authorization": f"Bearer {token}"}
 
 
-def test_importacao_id_sucesso():
+def test_processamento_id_sucesso():
     client = TestClient(app)
-    response = client.get('/importacao/1', headers=headers)
+    response = client.get('/processamento/1', headers=headers)
     assert response.status_code == 200
     assert len(response.json()) > 0
 
 
-def test_importacao_id_sem_token():
+def test_processamento_id_sem_token():
     client = TestClient(app)
-    response = client.get('/importacao/1')
+    response = client.get('/processamento/1')
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-def test_importacao_id_item_inexistente():
+def test_processamento_id_item_inexistente():
     client = TestClient(app)
-    response = client.get('/importacao/99999', headers=headers)
+    response = client.get('/processamento/999999', headers=headers)
     assert response.status_code == 404
     assert response.json() == {'detail': os.environ.get('ERRO_404')}
 
 
-def test_total_importacao_sucesso():
+def test_total_processamento_sucesso():
     client = TestClient(app)
-    response = client.get('/importacao', headers=headers)
+    response = client.get('/processamento', headers=headers)
     assert response.status_code == 200
     assert len(response.json()) > 0
 
 
-def test_total_importacao_sem_token():
+def test_total_processamento_sem_token():
     client = TestClient(app)
-    response = client.get('/importacao')
+    response = client.get('/processamento')
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-@pytest.mark.parametrize("importacao_entrada, expected_json", [
+@pytest.mark.parametrize("processamento_entrada, expected_json", [
     (
             {"id": 1},
             [
                 {
-                    "ano": "1970",
                     "id": 1,
-                    "valor": 0.0,
-                    "categoria": "Vinho_Mesa",
-                    "nome": "Africa do Sul",
-                    "quantidade": 0
+                    "sub_categoria": "TINTAS",
+                    "ano": "1970",
+                    "categoria": "Viniferas",
+                    "nome": "Alicante Bouschet",
+                    "valor_producao": 0.0
                 }
             ]
     ),
     (
-            {"categoria": "Vinho_Mesa", "nome": "Africa do Sul", "valor": 0.0, "quantidade": 0, "ano": "1970"},
+            {
+                "sub_categoria": "TINTAS",
+                "ano": "2000",
+                "nome": "Alicante Bouschet",
+                "valor_producao": 160318.0
+            },
             [
                 {
-                    "ano": "1970",
-                    "id": 1,
-                    "valor": 0.0,
-                    "categoria": "Vinho_Mesa",
-                    "nome": "Africa do Sul",
-                    "quantidade": 0
+                    "id": 31,
+                    "sub_categoria": "TINTAS",
+                    "ano": "2000",
+                    "categoria": "Viniferas",
+                    "nome": "Alicante Bouschet",
+                    "valor_producao": 160318.0
                 }
             ]
     ),
 
 ])
-def test_filtrar_importacao_sucesso(importacao_entrada, expected_json):
+def test_filtrar_processamento_sucesso(processamento_entrada, expected_json):
     client = TestClient(app)
-    response = client.post('/importacao/filtragem', headers=headers, json=importacao_entrada)
+    response = client.post('/processamento/filtragem', headers=headers, json=processamento_entrada)
     assert response.status_code == 200
     assert response.json() == expected_json
 
 
-@pytest.mark.parametrize('importacao_entrada, expected_json', [
+@pytest.mark.parametrize('processamento_entrada, expected_json', [
     (
             {"id": 1},
             [
@@ -97,16 +102,16 @@ def test_filtrar_importacao_sucesso(importacao_entrada, expected_json):
             ]
     ),
 ])
-def test_filtrar_importacao_sem_token(importacao_entrada, expected_json):
+def test_filtrar_processamento_sem_token(processamento_entrada, expected_json):
     client = TestClient(app)
-    response = client.post('/importacao/filtragem', json=importacao_entrada)
+    response = client.post('/processamento/filtragem', json=processamento_entrada)
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-def test_insere_importacao_sucesso():
+def test_insere_processamento_sucesso():
     global id_inserted
-    importacao_insert = {
+    processamento_insert = {
         "ano": "1970",
         "valor": 0.0,
         "categoria": "Vinho_Mesa_teste",
@@ -114,7 +119,7 @@ def test_insere_importacao_sucesso():
         "quantidade": 0
     }
     client = TestClient(app)
-    response = client.post('/importacao', headers=headers, json=importacao_insert)
+    response = client.post('/processamento', headers=headers, json=processamento_insert)
 
     id_inserted = response.json()['id']
 
@@ -122,53 +127,53 @@ def test_insere_importacao_sucesso():
     assert isinstance(id_inserted, int)
 
 
-def test_insere_importacao_sem_token():
-    importacao_insert = {
+def test_insere_processamento_sem_token():
+    processamento_insert = {
         "categoria": "VINHO DE MESA_TESTE",
         "litros_comercializacao": 83300735.0,
         "ano": "1970",
         "nome": "Tinto_teste"
     }
     client = TestClient(app)
-    response = client.post('/importacao', json=importacao_insert)
+    response = client.post('/processamento', json=processamento_insert)
 
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-def test_altera_importacao_sucesso():
-    importacao_alteracao = {
+def test_altera_processamento_sucesso():
+    processamento_alteracao = {
+        "categoria": "Viniferas_teste",
+        "nome": "Alicante Bouschet",
+        "valor_producao": 0.0,
         "ano": "1970",
-        "valor": 0.0,
-        "quantidade": 0,
-        "categoria": "Vinho_Mesa TESTE_update",
-        "nome": "Afeganistao"
+        "sub_categoria": "TINTAS_teste"
     }
 
     client = TestClient(app)
-    response = client.put('/importacao/10254', headers=headers, json=importacao_alteracao)
+    response = client.put('/processamento/10389', headers=headers, json=processamento_alteracao)
 
     assert response.status_code == 204
 
 
-def test_altera_importacao_sem_token():
-    importacao_alteracao = {
+def test_altera_processamento_sem_token():
+    processamento_alteracao = {
+        "categoria": "Viniferas_teste",
+        "nome": "Alicante Bouschet",
+        "valor_producao": 0.0,
         "ano": "1970",
-        "valor": 0.0,
-        "categoria": "Vinho_Mesa_teste",
-        "nome": "Africa do Sul UPDATE",
-        "quantidade": 0
+        "sub_categoria": "TINTAS_teste"
     }
 
     client = TestClient(app)
-    response = client.put('/importacao/10254', json=importacao_alteracao)
+    response = client.put('/processamento/10389', json=processamento_alteracao)
 
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-def test_altera_importacao_item_inexistente():
-    importacao_alteracao = {
+def test_altera_processamento_item_inexistente():
+    processamento_alteracao = {
         "ano": "1970",
         "valor": 0.0,
         "categoria": "Vinho_Mesa_teste",
@@ -177,32 +182,32 @@ def test_altera_importacao_item_inexistente():
     }
 
     client = TestClient(app)
-    response = client.put('/importacao/9999999', headers=headers, json=importacao_alteracao)
+    response = client.put('/processamento/9999999', headers=headers, json=processamento_alteracao)
 
     assert response.status_code == 404
     assert response.json() == {'detail': os.environ.get('ERRO_404')}
 
 
-def test_deleta_importacao_sucesso():
+def test_deleta_processamento_sucesso():
     global id_inserted
     print(id_inserted)
     client = TestClient(app)
-    response = client.delete(f'/importacao/{id_inserted}', headers=headers)
+    response = client.delete(f'/processamento/{id_inserted}', headers=headers)
 
     assert response.status_code == 204
 
 
-def test_deleta_importacao_sem_token():
+def test_deleta_processamento_sem_token():
     client = TestClient(app)
-    response = client.delete(f'/importacao/{id_inserted}')
+    response = client.delete(f'/processamento/{id_inserted}')
 
     assert response.status_code == 401
     assert response.json() == {'detail': os.environ.get('ERRO_401')}
 
 
-def test_deleta_importacao_item_inexistente():
+def test_deleta_processamento_item_inexistente():
     client = TestClient(app)
-    response = client.delete(f'/importacao/99999999', headers=headers)
+    response = client.delete(f'/processamento/99999999', headers=headers)
 
     assert response.status_code == 404
     assert response.json() == {'detail': os.environ.get('ERRO_404')}

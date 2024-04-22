@@ -137,10 +137,11 @@ def test_insere_exportacao_sucesso():
 
 def test_insere_exportacao_sem_token():
     exportacao_insert = {
-        "categoria": "VINHO DE MESA_TESTE",
-        "litros_comercializacao": 83300735.0,
         "ano": "1970",
-        "nome": "Tinto_teste"
+        "valor": 0.0,
+        "quantidade": 0,
+        "categoria": "Vinho_Mesa TESTE",
+        "nome": "Afeganistao"
     }
     client = TestClient(app)
     response = client.post('/exportacao', json=exportacao_insert)

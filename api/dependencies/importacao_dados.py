@@ -7,7 +7,7 @@ from unidecode import unidecode
 
 
 def corrigir_caracteres(valor):
-    if isinstance(valor, str):  # Verifica se o valor é uma string
+    if isinstance(valor, str):  # Verifica se o valor é uma 'string'
         valor.replace("Ã¢", "â").replace("Ã§Ã£", "ç").replace("Ãª", "ê").replace("Ã£", "ã")
         valor = unidecode(valor)
         return valor
@@ -47,6 +47,6 @@ def leitura_bytes(arquivo_bytes: bytes, separador: str, nome_tabela, skiprows=No
 
     df = df.fillna(0)
 
-    dataframe_corrigido = df.applymap(corrigir_caracteres)
+    dataframe_corrigido = df.map(corrigir_caracteres)
 
     return dataframe_corrigido

@@ -171,7 +171,7 @@ def test_altera_comercializacao_sucesso():
     }
 
     client = TestClient(app)
-    response = client.put('/comercializacao/2757', headers=headers, json=comercializacao_alteracao)
+    response = client.put('/comercializacao/500', headers=headers, json=comercializacao_alteracao)
 
     assert response.status_code == 204
 

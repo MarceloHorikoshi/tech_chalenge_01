@@ -1,12 +1,13 @@
-from api import schemas as models
-
+import os
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas.database import SessionLocal
+from api.schemas import models_db as models
+from api.schemas.models_db import Processamento
+from api.dependencies.database import SessionLocal
 from api.schemas.models_api import ProcessamentoBase
-from utils.authentication import get_current_user
+from api.services.authentication import get_current_user
 
 
 router = APIRouter()
@@ -24,6 +25,43 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
+@router.get('/processamento/{id_process}', status_code=status.HTTP_200_OK)
+async def processamento_id(
+        id_process: int,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+    #                         detail='Falha autentificacao')
+
+    processamento = db.query(models.Processamento).filter(models.Processamento.id == id_process).first()
+
+    if processamento is None:
+        raise HTTPException(status_code=404, detail=os.environ.get('ERRO_404'))
+
+    return processamento
+
+
+@router.get('/processamento', status_code=status.HTTP_200_OK)
+async def total_processamento(
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+    #                         detail='Falha autentificacao')
+
+    try:
+        # retorna todas as linhas da tabela
+        return db.query(models.Processamento).all()
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
+
+
 @router.post('/processamento/filtragem')
 async def filtrar_processamento(
         processamento: ProcessamentoBase,
@@ -31,9 +69,9 @@ async def filtrar_processamento(
         user: models.User = Depends(get_current_user)
 ):
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+    #                         detail='Falha autentificacao')
 
     try:
         query = db.query(models.Processamento)
@@ -70,38 +108,79 @@ async def filtrar_processamento(
         raise HTTPException(status_code=500, detail="Erro ao filtrar os dados de produção")
 
 
-@router.get('/processamento/{id_process}', status_code=status.HTTP_200_OK)
-async def processamento_id(
-        id_process: int,
+@router.post('/processamento', status_code=status.HTTP_201_CREATED)
+async def insere_processamento(
+        processamento: ProcessamentoBase,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
+    # if user is None:
+    #     raise HTTPException(status_code=401, detail=erro_401)
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    create_processamento_model = Processamento(
+        categoria=processamento.categoria,
+        sub_categoria=processamento.sub_categoria,
+        nome=processamento.nome,
+        ano=processamento.ano,
+        valor_producao=processamento.valor_producao
+    )
 
-    processamento = db.query(models.Processamento).filter(models.Processamento.id == id_process).first()
+    db.add(create_processamento_model)
+    db.commit()
 
-    if processamento is None:
-        raise HTTPException(status_code=404, detail='id nao encontrado')
+    db.refresh(create_processamento_model)
 
-    return processamento
+    return {'id': create_processamento_model.id}
 
 
-@router.get('/processamento', status_code=status.HTTP_200_OK)
-async def total_processamento(
+@router.put('/processamento/{id_processamento}', status_code=status.HTTP_204_NO_CONTENT)
+async def altera_processamento(
+        id_processamento: int,
+        processamento: ProcessamentoBase,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    # Busca o item no banco de dados pelo ID
+    processamento_model = db.query(Processamento).filter(Processamento.id == id_processamento).first()
+    if processamento_model is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
 
-    try:
-        # retorna todas as linhas da tabela
-        return db.query(models.Processamento).all()
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
+    # Atualiza os campos do objeto com os novos valores
+    processamento_model.categoria = processamento.categoria
+    processamento_model.sub_categoria = processamento.sub_categoria
+    processamento_model.nome = processamento.nome
+    processamento_model.ano = processamento.ano
+    processamento_model.valor_producao = processamento.valor_producao
+
+    # Realiza o commit para persistir as alterações no banco de dados
+    db.commit()
+
+    # Retorna o status 204 No Content, indicando sucesso sem conteúdo na resposta
+    return None
+
+
+@router.delete('/processamento/{id_processamento}', status_code=status.HTTP_204_NO_CONTENT)
+async def deleta_processamento(
+        id_processamento: int,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+
+    # Busca o item no banco de dados pelo ID
+    comercializacao_model = db.query(Processamento).filter(Processamento.id == id_processamento).first()
+    if comercializacao_model is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
+
+    db.delete(comercializacao_model)
+
+    # Realiza o commit para persistir as alterações no banco de dados
+    db.commit()
+
+    # Retorna o status 204 No Content, indicando sucesso sem conteúdo na resposta
+    return None
+

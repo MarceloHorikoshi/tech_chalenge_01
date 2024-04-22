@@ -1,8 +1,8 @@
 from typing import Annotated
 from fastapi import FastAPI, Depends
 
-from api import schemas as models
-from api.schemas.database import engine, SessionLocal
+from api.schemas import models_db as models
+from api.dependencies.database import engine, SessionLocal
 
 from sqlalchemy.orm import Session
 

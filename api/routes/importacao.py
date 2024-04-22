@@ -1,15 +1,15 @@
 import os
 
-from api import schemas as models
+from api.schemas import models_db as models
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
 from api.schemas.models_db import Importacao
-from api.schemas.database import SessionLocal
+from api.dependencies.database import SessionLocal
 from api.schemas.models_api import ImportacaoBase
-from utils.authentication import get_current_user
+from api.services.authentication import get_current_user
 
 
 router = APIRouter()

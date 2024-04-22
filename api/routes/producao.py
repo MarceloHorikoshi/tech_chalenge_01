@@ -1,12 +1,14 @@
-from api import schemas as models
+import os
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas.database import SessionLocal
+from api.schemas import models_db as models
+from api.schemas.models_db import Producao
+from api.dependencies.database import SessionLocal
 from api.schemas.models_api import ProducaoBase
-from utils.authentication import get_current_user
+from api.services.authentication import get_current_user
 
 
 router = APIRouter()
@@ -24,9 +26,9 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
-@router.post('/producao/filtragem')
-async def filtrar_producao(
-        producao: ProducaoBase,
+@router.get('/producao/{id_prod}', status_code=status.HTTP_200_OK)
+async def producao_id(
+        id_prod: int,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
@@ -34,6 +36,44 @@ async def filtrar_producao(
     if user is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
                             detail='Falha autentificacao')
+
+    producao = db.query(models.Producao).filter(models.Producao.id == id_prod).first()
+
+    if producao is None:
+        raise HTTPException(status_code=404, detail=os.environ.get('ERRO_404'))
+
+    return producao
+
+
+@router.get('/producao', status_code=status.HTTP_200_OK)
+async def total_producao(
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+    #                         detail='Falha autentificacao')
+
+    try:
+        # retorna todas as linhas da tabela
+        producoes = db.query(models.Producao).all()
+        return producoes
+    except Exception as e:
+        print(e)
+        raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
+
+
+@router.post('/producao/filtragem')
+async def filtrar_producao(
+        producao: ProducaoBase,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
+    #                         detail='Falha autentificacao')
 
     try:
         query = db.query(models.Producao)
@@ -66,39 +106,76 @@ async def filtrar_producao(
         raise HTTPException(status_code=500, detail="Erro ao filtrar os dados de produção")
 
 
-@router.get('/producao/{id_prod}', status_code=status.HTTP_200_OK)
-async def producao_id(
-        id_prod: int,
+@router.post('/producao', status_code=status.HTTP_201_CREATED)
+async def insere_producao(
+        producao: ProducaoBase,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
+    # if user is None:
+    #     raise HTTPException(status_code=401, detail=erro_401)
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    create_producao_model = Producao(
+        categoria=producao.categoria,
+        nome=producao.nome,
+        ano=producao.ano,
+        valor_producao=producao.valor_producao
+    )
 
-    producao = db.query(models.Producao).filter(models.Producao.id == id_prod).first()
+    db.add(create_producao_model)
+    db.commit()
 
-    if producao is None:
-        raise HTTPException(status_code=404, detail='id nao encontrado')
+    db.refresh(create_producao_model)
 
-    return producao
+    return {'id': create_producao_model.id}
 
 
-@router.get('/producao', status_code=status.HTTP_200_OK)
-async def total_producao(
+@router.put('/producao/{id_producao}', status_code=status.HTTP_204_NO_CONTENT)
+async def altera_producao(
+        id_producao: int,
+        producao: ProducaoBase,
         db: db_dependency,
         user: models.User = Depends(get_current_user)
 ):
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    # Busca o item no banco de dados pelo ID
+    producao_model = db.query(Producao).filter(Producao.id == id_producao).first()
+    if producao_model is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
 
-    try:
-        # retorna todas as linhas da tabela
-        producoes = db.query(models.Producao).all()
-        return producoes
-    except Exception as e:
-        print(e)
-        raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
+    # Atualiza os campos do objeto com os novos valores
+    producao_model.categoria = producao.categoria
+    producao_model.nome = producao.nome
+    producao_model.ano = producao.ano
+    producao_model.valor_producao = producao.valor_producao
+
+    # Realiza o commit para persistir as alterações no banco de dados
+    db.commit()
+
+    # Retorna o status 204 No Content, indicando sucesso sem conteúdo na resposta
+    return None
+
+
+@router.delete('/producao/{id_producao}', status_code=status.HTTP_204_NO_CONTENT)
+async def deleta_producao(
+        id_producao: int,
+        db: db_dependency,
+        user: models.User = Depends(get_current_user)
+):
+    # if user is None:
+    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+
+    # Busca o item no banco de dados pelo ID
+    comercializacao_model = db.query(Producao).filter(Producao.id == id_producao).first()
+    if comercializacao_model is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
+
+    db.delete(comercializacao_model)
+
+    # Realiza o commit para persistir as alterações no banco de dados
+    db.commit()
+
+    # Retorna o status 204 No Content, indicando sucesso sem conteúdo na resposta
+    return None
