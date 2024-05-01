@@ -17,7 +17,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-router = APIRouter()
+router = APIRouter(
+    tags=['Inicializador DB'],
+    dependencies=[Depends(get_current_user)],
+    responses={401: {'detail': os.environ.get('ERRO_401')}}
+)
 
 
 def get_db():
@@ -33,6 +37,16 @@ user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
 class Inicializacao:
+    """
+    Classe para gerenciar a inicialização de tabelas no banco de dados.
+
+    Attributes:
+        nome_tabela (str): Nome da tabela a ser inicializada.
+        nome_coluna (str): Nome da coluna principal na tabela.
+        drop_column (str, optional): Nome da coluna a ser removida, se houver.
+        lista_links (list[dict]): Lista de dicionários com URLs e super categorias (se aplicável).
+        separador (str): Caractere separador usado nos arquivos CSV.
+    """
 
     def __init__(
             self,
@@ -49,6 +63,11 @@ class Inicializacao:
         self.separador = separador
 
     def insercoes(self, db):
+        """Realiza as inserções de dados na tabela.
+
+        Args:
+            db: Sessão do banco de dados.
+        """
 
         limpa_tabela(db, self.nome_tabela)
 
@@ -95,13 +114,18 @@ class Inicializacao:
 
 @router.get('/inicializacao', status_code=status.HTTP_201_CREATED)
 async def total_processamento(
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
+    """
+    Inicializa as tabelas do banco de dados com dados de fontes externas.
 
-    if user is None:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-                            detail='Falha autentificacao')
+    Args:
+        db: Sessão do banco de dados.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro durante a inicialização.
+    """
+
     try:
         lista_json_insercao = [
 

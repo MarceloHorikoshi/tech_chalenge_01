@@ -21,7 +21,7 @@ from api.services.authentication import get_current_user
 
 router = APIRouter(
     prefix='/auth',
-    tags=['auth']
+    tags=['Users']
 )
 
 
@@ -41,6 +41,16 @@ user_dependency = Annotated[Session, Depends(get_current_user)]
 async def user(user_total: user_dependency,
                user_authentication: models.User = Depends(get_current_user)
                ):
+    """
+    Retorna informações do usuário atual.
+
+    Args:
+        user_total: Informações do usuário atual obtidas do token JWT.
+        user_authentication: Dependência para verificar a autenticação do usuário.
+
+    Returns:
+        dict: Dicionário contendo as informações do usuário.
+    """
     # if user is None:
     #     raise HTTPException(status_code=401, detail='Falha autentificacao')
     return {'User': user_total}
@@ -51,6 +61,17 @@ async def read_user(user_id: int,
                     db: db_dependency,
                     user_authentication: models.User = Depends(get_current_user)
                     ):
+    """
+    Obtém informações de um usuário específico pelo ID.
+
+    Args:
+        user_id (int): ID do usuário a ser buscado.
+        db: Sessão do banco de dados.
+        user_authentication: Dependência para verificar a autenticação do usuário.
+
+    Returns:
+        User: Objeto User correspondente ao ID, ou gera HTTP_404_NOT_FOUND se não encontrado.
+    """
     # if user_authentication is None:
     #     raise HTTPException(status_code=401, detail='Falha autentificacao')
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -64,6 +85,16 @@ async def create_user(
         create_user_request: CreateUserRequest,
         db: db_dependency
 ):
+    """
+    Cria um novo usuário.
+
+    Args:
+        create_user_request (CreateUserRequest): Objeto com o nome de usuário e senha.
+        db: Sessão do banco de dados.
+
+    Returns:
+        dict: Dicionário contendo o ID do usuário criado.
+    """
     create_user_model = User(
         username=create_user_request.username,
         hashed_password=bcrypt_context.hash(create_user_request.password)
@@ -83,6 +114,22 @@ async def update_password_user(user_id: int,
                                db: db_dependency,
                                user_authentication: models.User = Depends(get_current_user)
                                ):
+    """
+    Atualiza a senha de um usuário.
+
+    Args:
+        user_id (int): ID do usuário a ser atualizado.
+        update_data (CreateUserRequest): Objeto com a nova senha.
+        db: Sessão do banco de dados.
+        user_authentication: Dependência para verificar a autenticação do usuário.
+
+    Returns:
+        User: O objeto User atualizado.
+
+    Raises:
+        HTTPException: Com status code 404 Not Found se o usuário não for encontrado.
+    """
+
     # Verifica se o usuário existe
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
@@ -102,6 +149,20 @@ async def delete_user(user_id: int,
                       db: db_dependency,
                       user_authentication: models.User = Depends(get_current_user)
                       ):
+    """
+    Deleta um usuário pelo ID.
+
+    Args:
+        user_id (int): ID do usuário a ser deletado.
+        db: Sessão do banco de dados.
+        user_authentication: Dependência para verificar a autenticação do usuário.
+
+    Returns:
+        Retorna um status HTTP 204 No Content em caso de sucesso.
+
+    Raises:
+        HTTPException: Com status code 404 Not Found se o usuário não for encontrado.
+    """
     # Verifica se o usuário existe
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if user is None:
@@ -111,14 +172,25 @@ async def delete_user(user_id: int,
     db.delete(user)
     db.commit()
 
-    return None
-
 
 @router.post('/token', response_model=Token)
 async def login_for_access_token(
         form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
         db: db_dependency
 ):
+    """
+    Realiza o login do usuário e retorna um token de acesso JWT.
+
+    Args:
+        form_data: Formulário com o nome de usuário e senha.
+        db: Sessão do banco de dados.
+
+    Returns:
+        Token: Um objeto Token contendo o token de acesso e o tipo de token.
+
+    Raises:
+        HTTPException: Com status code 401 Unauthorized se as credenciais forem inválidas.
+    """
     user = authenticate_user(form_data.username, form_data.password, db)
 
     if not user:

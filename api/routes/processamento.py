@@ -10,7 +10,11 @@ from api.schemas.models_api import ProcessamentoBase
 from api.services.authentication import get_current_user
 
 
-router = APIRouter()
+router = APIRouter(
+    tags=['Processamento'],
+    dependencies=[Depends(get_current_user)],
+    responses={401: {'detail': os.environ.get('ERRO_401')}}
+)
 
 
 def get_db():
@@ -28,13 +32,19 @@ user_dependency = Annotated[Session, Depends(get_current_user)]
 @router.get('/processamento/{id_process}', status_code=status.HTTP_200_OK)
 async def processamento_id(
         id_process: int,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
+    """
+    Obtém um item da tabela de processamento pelo ID.
 
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-    #                         detail='Falha autentificacao')
+    Args:
+        id_process (int): O ID do processamento.
+        db: Sessão do banco de dados.
+
+    Returns:
+        Exportação: O objeto Exportacao correspondente ao ID,
+            ou gera HTTP_404_NOT_FOUND se não encontrado.
+    """
 
     processamento = db.query(models.Processamento).filter(models.Processamento.id == id_process).first()
 
@@ -46,13 +56,20 @@ async def processamento_id(
 
 @router.get('/processamento', status_code=status.HTTP_200_OK)
 async def total_processamento(
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
+    """
+    Obtém todos os dados da tabela de processamento.
 
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-    #                         detail='Falha autentificacao')
+    Args:
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Processamento]: Uma lista de objetos Processamento.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao obter os dados.
+    """
 
     try:
         # retorna todas as linhas da tabela
@@ -65,13 +82,29 @@ async def total_processamento(
 @router.post('/processamento/filtragem')
 async def filtrar_processamento(
         processamento: ProcessamentoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
+    """
+    Filtra dados da tabela de processamento com base nos critérios fornecidos.
+    Necessário passar pelo menos um dos parâmetros para retornar algo.
 
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,
-    #                         detail='Falha autentificacao')
+    Args:
+        processamento (ProcessamentoBase): Objeto com os critérios de filtro.
+            Os campos disponíveis para filtro são:
+            * id (int, optional): ID único da entrada.
+            * categoria (str, optional): Categoria do produto.
+            * sub_categoria  (str, optional): Sub_categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * valor_processamento (float, optional): Valor processado.
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Processamento]: Uma lista de objetos Processamento que correspondem aos filtros.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
+    """
 
     try:
         query = db.query(models.Processamento)
@@ -98,7 +131,7 @@ async def filtrar_processamento(
 
         # Adiciona filtro pelo valor de produção se fornecido
         if processamento.valor_producao is not None:
-            query = query.filter(models.Processamento.valor_producao == processamento.valor_producao)
+            query = query.filter(models.Processamento.valor_processamento == processamento.valor_processamento)
 
         # Executa a consulta e retorna os resultados
         return query.all()
@@ -111,18 +144,35 @@ async def filtrar_processamento(
 @router.post('/processamento', status_code=status.HTTP_201_CREATED)
 async def insere_processamento(
         processamento: ProcessamentoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=401, detail=erro_401)
+    """
+    Insere dados da tabela de processamento com base nos critérios fornecidos.
+    Necessário passar pelo menos um dos parâmetros para retornar algo.
+
+    Args:
+        processamento (ProcessamentoBase): Objeto com os critérios de filtro.
+            Os campos disponíveis para filtro são:
+            * categoria (str, optional): Categoria do produto.
+            * sub_categoria  (str, optional): Sub_categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * valor_processamento (float, optional): Valor processado.
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Processamento]: Uma lista de objetos Processamento que correspondem aos filtros.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
+    """
 
     create_processamento_model = Processamento(
         categoria=processamento.categoria,
         sub_categoria=processamento.sub_categoria,
         nome=processamento.nome,
         ano=processamento.ano,
-        valor_producao=processamento.valor_producao
+        valor_processamento=processamento.valor_processamento
     )
 
     db.add(create_processamento_model)
@@ -137,11 +187,29 @@ async def insere_processamento(
 async def altera_processamento(
         id_processamento: int,
         processamento: ProcessamentoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+    """
+    Altera os dados referentes a um item existente na tabela de processamento.
+
+    Args:
+        id_processamento (int): O ID do processamento a ser alterado.
+        processamento (ProcessamentoBase): Objeto com os critérios de filtro.
+            Os campos disponíveis para filtro são:
+            * categoria (str, optional): Categoria do produto.
+            * sub_categoria  (str, optional): Sub_categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * valor_processamento (float, optional): Valor processado.
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Processamento]: lista de objetos Processamento que correspondem aos filtros.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
+    """
+
 
     # Busca o item no banco de dados pelo ID
     processamento_model = db.query(Processamento).filter(Processamento.id == id_processamento).first()
@@ -153,7 +221,7 @@ async def altera_processamento(
     processamento_model.sub_categoria = processamento.sub_categoria
     processamento_model.nome = processamento.nome
     processamento_model.ano = processamento.ano
-    processamento_model.valor_producao = processamento.valor_producao
+    processamento_model.valor_processamento = processamento.valor_processamento
 
     # Realiza o commit para persistir as alterações no banco de dados
     db.commit()
@@ -165,11 +233,22 @@ async def altera_processamento(
 @router.delete('/processamento/{id_processamento}', status_code=status.HTTP_204_NO_CONTENT)
 async def deleta_processamento(
         id_processamento: int,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+
+    """
+    Deleta um item da tabela de processamento pelo ID.
+
+    Args:
+        id_processamento (int): O ID do processamento a ser deletada.
+        db: Sessão do banco de dados.
+
+    Returns:
+        None: Retorna um status HTTP 204 No Content em caso de sucesso.
+
+    Raises:
+        HTTPException: Com status code 404 Not Found se o processamento não for encontrado.
+    """
 
     # Busca o item no banco de dados pelo ID
     comercializacao_model = db.query(Processamento).filter(Processamento.id == id_processamento).first()

@@ -8,7 +8,10 @@ from sqlalchemy.orm import Session
 
 from api.routes import comercializacao, importacao, producao, processamento, inicializacao_banco, users, exportacao
 
-app = FastAPI()
+app = FastAPI(
+    title='API-EMBRAPA',
+    description='API para gerenciar dados oriundos da base de dados da EMBRAPA',
+)
 
 
 models.Base.metadata.create_all(bind=engine)

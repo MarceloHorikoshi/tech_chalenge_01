@@ -10,10 +10,14 @@ from api.dependencies.database import SessionLocal
 from api.schemas.models_api import ComercializacaoBase
 from api.services.authentication import get_current_user
 
+from dotenv import load_dotenv
+load_dotenv()
 
-router = APIRouter()
-
-erro_401 = os.environ.get('ERRO_401')
+router = APIRouter(
+    tags=['Comercializacao'],
+    dependencies=[Depends(get_current_user)],
+    responses={401: {'detail': os.environ.get('ERRO_401')}}
+)
 
 
 def get_db():
@@ -31,11 +35,19 @@ user_dependency = Annotated[Session, Depends(get_current_user)]
 @router.get('/comercializacao/{id_comercializacao}', status_code=status.HTTP_200_OK)
 async def comercializacao_id(
         id_comercializacao: int,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+    """
+    Obtém um item da tabela de comercializacao pelo ID.
+
+    Args:
+        id_comercializacao (int): O ID da comercializacao.
+        db: Sessão do banco de dados.
+
+    Returns:
+        Comercializacao: O objeto Comercializacao correspondente ao ID,
+            ou gera HTTP_404_NOT_FOUND se não encontrado.
+    """
 
     comercializacao = db.query(models.Comercializacao).filter(models.Comercializacao.id == id_comercializacao).first()
 
@@ -46,12 +58,19 @@ async def comercializacao_id(
 
 
 @router.get('/comercializacao', status_code=status.HTTP_200_OK)
-async def total_comercializacao(
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
-):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+async def total_comercializacao(db: db_dependency):
+    """
+    Obtém todos os dados da tabela de comercializacao.
+
+    Args:
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Comercializacao]: Uma lista de objetos Comercializacao.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao obter os dados.
+    """
     try:
         # retorna todas as linhas da tabela
         return db.query(models.Comercializacao).all()
@@ -63,12 +82,28 @@ async def total_comercializacao(
 @router.post('/comercializacao/filtragem', status_code=status.HTTP_200_OK)
 async def filtrar_comercializacao(
         comercializacao: ComercializacaoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
+    """
+    Filtra dados da tabela de comercializacao com base nos critérios fornecidos.
+    Necessário passar pelo menos um dos parâmetros para retornar algo.
 
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+    Args:
+        comercializacao (ComercializacaoBase): Objeto com os critérios de filtro.
+            Os campos disponíveis para filtro são:
+            * id (int, optional): ID único da entrada.
+            * categoria (str, optional): Categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * litros_comercializacao (float, optional): Quantidade de litros comercializados.
+        db: Sessão do banco de dados.
+
+    Returns:
+        list[Comercializacao]: Uma lista de objetos Comercializacao que correspondem aos filtros.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
+    """
 
     try:
         query = db.query(models.Comercializacao)
@@ -104,11 +139,27 @@ async def filtrar_comercializacao(
 @router.post('/comercializacao', status_code=status.HTTP_201_CREATED)
 async def insere_comercializacao(
         comercializacao: ComercializacaoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=401, detail=erro_401)
+    """
+    Insere dados de na tabela de comercializacao com base nos critérios fornecidos.
+    Necessário passar pelo menos um dos parâmetros para retornar algo.
+
+    Args:
+        comercializacao (ComercializacaoBase): Objeto com os critérios de filtro.
+            Os campos para inserção são:
+            * categoria (str, optional): Categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * litros_comercializacao (float, optional): Quantidade de litros comercializados.
+        db: Sessão do banco de dados.
+
+    Returns:
+        ID[int]: Retorna o ID inserido.
+
+    Raises:
+        HTTPException: Com status code 500 se houver um erro ao inserir os dados.
+    """
 
     create_comercializacao_model = Comercializacao(
         categoria=comercializacao.categoria,
@@ -129,12 +180,26 @@ async def insere_comercializacao(
 async def altera_comercializacao(
         id_comercializacao: int,
         comercializacao: ComercializacaoBase,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+    """
+    Altera os dados referentes a um item existente na tabela de comercializacao.
+    Args:
+        id_comercializacao (int): O ID da comercializacao a ser alterada.
+        comercializacao (ComercializacaoBase): Objeto com os novos dados da comercializacao.
+            Os campos que podem ser alterados são:
+            * categoria (str, optional): Categoria do produto.
+            * nome (str, optional): Nome do produto.
+            * ano (str, optional): Ano dos dados.
+            * litros_comercializacao (float, optional): Quantidade de litros comercializados.
+        db: Sessão do banco de dados.
 
+    Returns:
+        None: Retorna um status HTTP 204 No Content em caso de sucesso.
+
+    Raises:
+        HTTPException: Com status code 404 Not Found se a comercializacao não for encontrada.
+    """
     # Busca o item no banco de dados pelo ID
     comercializacao_model = db.query(Comercializacao).filter(Comercializacao.id == id_comercializacao).first()
     if comercializacao_model is None:
@@ -156,11 +221,21 @@ async def altera_comercializacao(
 @router.delete('/comercializacao/{id_comercializacao}', status_code=status.HTTP_204_NO_CONTENT)
 async def deleta_comercializacao(
         id_comercializacao: int,
-        db: db_dependency,
-        user: models.User = Depends(get_current_user)
+        db: db_dependency
 ):
-    # if user is None:
-    #     raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail=erro_401)
+    """
+    Deleta um item da tabela de comercializacao pelo ID.
+
+    Args:
+        id_comercializacao (int): O ID da comercializacao a ser deletada.
+        db: Sessão do banco de dados.
+
+    Returns:
+        None: Retorna um status HTTP 204 No Content em caso de sucesso.
+
+    Raises:
+        HTTPException: Com status code 404 Not Found se a comercializacao não for encontrada.
+    """
 
     # Busca o item no banco de dados pelo ID
     comercializacao_model = db.query(Comercializacao).filter(Comercializacao.id == id_comercializacao).first()

@@ -15,7 +15,7 @@ port_db = os.environ.get('PORT_DB')
 schema_db = os.environ.get('SCHEMA_DB')
 
 
-URL_DATABASE = F'mysql+pymysql://{user_db}:{password_db}@{url_db}:{port_db}/{schema_db}'
+URL_DATABASE = f'mysql+pymysql://{user_db}:{password_db}@{url_db}:{port_db}/{schema_db}'
 
 engine = create_engine(URL_DATABASE)
 

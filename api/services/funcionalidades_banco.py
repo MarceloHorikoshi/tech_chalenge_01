@@ -3,12 +3,26 @@ from sqlalchemy import text
 
 
 def limpa_tabela(db, tabela):
-    # limpa a tabela
+    """Limpa todos os dados de uma tabela especificada.
+
+    Args:
+        db: Objeto de sessão do banco de dados.
+        tabela (str): O nome da tabela a ser limpa.
+    """
     db.execute(text(f"TRUNCATE TABLE {tabela}"))
     db.commit()
 
 
 def insercao_dados(db, dict_final, coluna, tabela, super_categoria=None):
+    """Insere dados em uma tabela especificada a partir de um dicionário.
+
+    Args:
+        db: Objeto de sessão do banco de dados.
+        dict_final (dict): Dicionário contendo os dados a serem inseridos.
+        coluna (str): Nome da coluna que identifica o produto ou categoria.
+        tabela (str): Nome da tabela onde os dados serão inseridos.
+        super_categoria (str, optional): Nome da super categoria (usado para tabelas com subcategorias). Defaults to None.
+    """
     try:
         # faz a inserção de todos os dados na tabela
         if tabela == 'exportacao' or tabela == 'importacao':
