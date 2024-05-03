@@ -89,7 +89,7 @@ def insercao_dados(db, dict_final, coluna, tabela, super_categoria=None):
                                     sub_categoria=str(nome_categoria).strip(),
                                     nome=str(nome_produto).strip(),
                                     ano=ano,
-                                    valor_producao=float(valor)
+                                    valor_processamento=float(valor)
                                 )
                             elif tabela == 'comercializacao':
                                 item = models.Comercializacao(
