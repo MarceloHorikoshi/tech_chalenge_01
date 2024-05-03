@@ -29,7 +29,7 @@ Todos os dados já virão organizados e separados por categorias, sub-categorias
 Para poder utilizar todas as funcionalidades da API, basta dispor de uma ferramenta _'API Client'_ 
 como o **POSTMAN** ou o **INSOMNIA**, acrescentar a url referente a cada um dos endpoints e selecionar o tipo de 
 requisição, _GET, POST, PUT OU DELETE_.
-Também é possível acessar as funcionalidades através do endereço [SWAGGER](http://18.117.254.84/docs), que possibilita uma 
+Também é possível acessar as funcionalidades através do endereço [SWAGGER](http://127.0.0.1:8000/docs), que possibilita uma 
 visualização bem clara da documentação de cada um dos endpoints com descrição de cada parametro e 
 body para enviar. 
 
@@ -45,27 +45,6 @@ PASSWORD_DB=senha do banco de dados
 URL_DB=endereço do banco, se for local é 127.0.0.1
 PORT_DB=3306 geralmente é o padrão
 SCHEMA_DB=nome do schema do banco de dados
-
-URL_COMERCIALIZACAO=url
-
-URL_EXPORTACAO_VINHOS_MESA=url
-URL_EXPORTACAO_ESPUMANTE=url
-URL_EXPORTACAO_UVAS_FRESCAS=url
-URL_EXPORTACAO_SUCO_UVA=url
-
-URL_IMPORTACAO_VINHOS_MESA=url
-URL_IMPORTACAO_ESPUMANTE=url
-URL_IMPORTACAO_UVAS_FRESCAS=url
-URL_IMPORTACAO_UVAS_PASSAS=url
-URL_IMPORTACAO_SUCO_UVA=url
-
-URL_PROCESSAMENTO_VINIFERAS=url
-URL_PROCESSAMENTO_AMERICANAS=url
-URL_PROCESSAMENTO_MESA=url
-URL_PROCESSAMENTO_OUTRAS=url
-
-URL_PRODUCAO=url
-
 
 SECRET_KEY=valor
 ALGORITHM=valor
@@ -91,7 +70,7 @@ e basta acrescer '/nome do endpoint'
 Antes de utilizar a API é importante ter em mãos um token de autenticação, para este projeto foi 
 escolhido o método de autentificação JWT, portanto é necessário que seja criado um usuário e senha 
 para que possa ser gerado um token de autenticação que deve ser usado em todos as outras requisições.
-Para criar um usuário basta realizar um _POST_ na url http://18.117.254.84/auth/users/ e passar como
+Para criar um usuário basta realizar um _POST_ na url http://127.0.0.1:8000/auth/users/ e passar como
  payload um nome de usuário e uma senha **(criptografada na base de dados)**.
 
 ###### Observação: Não é possível criar dois ou mais usuários com o mesmo nome
@@ -101,7 +80,7 @@ Para criar um usuário basta realizar um _POST_ na url http://18.117.254.84/auth
 import requests
 import json
 
-url = "http://18.117.254.84/auth/users/"
+url = "http://127.0.0.1:8000/auth/users/"
 
 payload = json.dumps({
   "username": "teste",
@@ -127,7 +106,7 @@ Caso já tenha o token de usuário é possível acessar todos os usuários criad
 ```py
 import requests
 
-url = "http://18.117.254.84/auth/users"
+url = "http://127.0.0.1:8000/auth/users"
 
 payload={}
 headers = {
@@ -151,7 +130,7 @@ criados com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/auth/users/1"
+url = "http://127.0.0.1:8000/auth/users/1"
 
 payload={}
 headers = {
@@ -176,7 +155,7 @@ criados para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/auth/users/1"
+url = "http://127.0.0.1:8000/auth/users/1"
 
 payload = json.dumps({
   "username": "teste1",
@@ -204,7 +183,7 @@ Caso já tenha o token de usuário é possível deletar um usuário através do 
 ```py
 import requests
 
-url = "http://18.117.254.84/auth/users/3"
+url = "http://127.0.0.1:8000/auth/users/3"
 
 payload={}
 headers = {
@@ -232,7 +211,7 @@ funcionalidades e para isso basta utilizar o método _POST_.
 ```py
 import requests
 
-url = "http://18.117.254.84/auth/token"
+url = "http://127.0.0.1:8000/auth/token"
 
 payload='username=<NOME_USUARIO>&password=<SENHA>'
 headers = {
@@ -263,7 +242,7 @@ tratando e preenchendo todas as tabelas do banco de dados, responsável por orga
 ```py
 import requests
 
-url = "http://18.117.254.84/inicializacao"
+url = "http://127.0.0.1:8000/inicializacao"
 
 payload={}
 headers = {
@@ -289,7 +268,7 @@ com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/comercializacao"
+url = "http://127.0.0.1:8000/comercializacao"
 
 payload={}
 headers = {
@@ -313,7 +292,7 @@ comercializacao pelo id com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/comercializacao/1"
+url = "http://127.0.0.1:8000/comercializacao/1"
 
 payload={}
 headers = {
@@ -337,7 +316,7 @@ comercializacao através do método _POST_.
 import requests
 import json
 
-url = "http://18.117.254.84/comercializacao"
+url = "http://127.0.0.1:8000/comercializacao"
 
 payload = json.dumps({
   "categoria": "VINHO DE MESA_TESTE",
@@ -368,7 +347,7 @@ filtragem mais elaborada através do método _POST_, trazendo todas as informaç
 import requests
 import json
 
-url = "http://18.117.254.84/comercializacao/filtragem"
+url = "http://127.0.0.1:8000/comercializacao/filtragem"
 
 payload = json.dumps({
   "categoria": "VINHO DE MESA",
@@ -400,7 +379,7 @@ pelo id para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/comercializacao/2757"
+url = "http://127.0.0.1:8000/comercializacao/2757"
 
 payload = json.dumps({
   "categoria": "VINHO DE MESA_TESTE_UPDATE",
@@ -432,7 +411,7 @@ através do id com o método _DELETE_.
 ```py
 import requests
 
-url = "http://18.117.254.84/comercializacao/2761"
+url = "http://127.0.0.1:8000/comercializacao/2761"
 
 payload={}
 headers = {
@@ -461,7 +440,7 @@ com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/exportacao"
+url = "http://127.0.0.1:8000/exportacao"
 
 payload={}
 headers = {
@@ -485,7 +464,7 @@ exportacao pelo id com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/exportacao/1"
+url = "http://127.0.0.1:8000/exportacao/1"
 
 payload={}
 headers = {
@@ -509,7 +488,7 @@ exportacao através do método _POST_.
 import requests
 import json
 
-url = "http://18.117.254.84/exportacao"
+url = "http://127.0.0.1:8000/exportacao"
 
 payload = json.dumps({
   "ano": "1970",
@@ -541,7 +520,7 @@ filtragem mais elaborada através do método _POST_, trazendo todas as informaç
 import requests
 import json
 
-url = "http://18.117.254.84/exportacao/filtragem"
+url = "http://127.0.0.1:8000/exportacao/filtragem"
 
 payload = json.dumps({
   "categoria": "Vinho_Mesa",
@@ -574,7 +553,7 @@ pelo id para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/exportacao/2757"
+url = "http://127.0.0.1:8000/exportacao/2757"
 
 payload = json.dumps({
   "ano": "1970",
@@ -607,7 +586,7 @@ através do id com o método _DELETE_.
 ```py
 import requests
 
-url = "http://18.117.254.84/exportacao/2761"
+url = "http://127.0.0.1:8000/exportacao/2761"
 
 payload={}
 headers = {
@@ -634,7 +613,7 @@ com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/importacao"
+url = "http://127.0.0.1:8000/importacao"
 
 payload={}
 headers = {
@@ -658,7 +637,7 @@ importacao pelo id com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/importacao/1"
+url = "http://127.0.0.1:8000/importacao/1"
 
 payload={}
 headers = {
@@ -682,7 +661,7 @@ importacao através do método _POST_.
 import requests
 import json
 
-url = "http://18.117.254.84/importacao"
+url = "http://127.0.0.1:8000/importacao"
 
 payload = json.dumps({
   "ano": "1970",
@@ -714,7 +693,7 @@ filtragem mais elaborada através do método _POST_, trazendo todas as informaç
 import requests
 import json
 
-url = "http://18.117.254.84/importacao/filtragem"
+url = "http://127.0.0.1:8000/importacao/filtragem"
 
 payload = json.dumps({
   "categoria": "Vinho_Mesa",
@@ -747,7 +726,7 @@ pelo id para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/importacao/2757"
+url = "http://127.0.0.1:8000/importacao/2757"
 
 payload = json.dumps({
   "ano": "1970",
@@ -780,7 +759,7 @@ através do id com o método _DELETE_.
 ```py
 import requests
 
-url = "http://18.117.254.84/importacao/2761"
+url = "http://127.0.0.1:8000/importacao/2761"
 
 payload={}
 headers = {
@@ -807,7 +786,7 @@ com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/processamento"
+url = "http://127.0.0.1:8000/processamento"
 
 payload={}
 headers = {
@@ -831,7 +810,7 @@ processamento pelo id com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/processamento/1"
+url = "http://127.0.0.1:8000/processamento/1"
 
 payload={}
 headers = {
@@ -855,7 +834,7 @@ processamento através do método _POST_.
 import requests
 import json
 
-url = "http://18.117.254.84/processamento"
+url = "http://127.0.0.1:8000/processamento"
 
 payload = json.dumps({
   "categoria": "Viniferas_teste",
@@ -887,7 +866,7 @@ filtragem mais elaborada através do método _POST_, trazendo todas as informaç
 import requests
 import json
 
-url = "http://18.117.254.84/processamento/filtragem"
+url = "http://127.0.0.1:8000/processamento/filtragem"
 
 payload = json.dumps({
   "sub_categoria": "TINTAS",
@@ -921,7 +900,7 @@ pelo id para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/processamento/2757"
+url = "http://127.0.0.1:8000/processamento/2757"
 
 payload = json.dumps({
   "categoria": "Viniferas_teste",
@@ -954,7 +933,7 @@ através do id com o método _DELETE_.
 ```py
 import requests
 
-url = "http://18.117.254.84/processamento/2761"
+url = "http://127.0.0.1:8000/processamento/2761"
 
 payload={}
 headers = {
@@ -983,7 +962,7 @@ com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/producao"
+url = "http://127.0.0.1:8000/producao"
 
 payload={}
 headers = {
@@ -1007,7 +986,7 @@ producao pelo id com o método _GET_.
 ```py
 import requests
 
-url = "http://18.117.254.84/producao/1"
+url = "http://127.0.0.1:8000/producao/1"
 
 payload={}
 headers = {
@@ -1031,7 +1010,7 @@ producao através do método _POST_.
 import requests
 import json
 
-url = "http://18.117.254.84/producao"
+url = "http://127.0.0.1:8000/producao"
 
 payload = json.dumps({
   "nome": "Tinto",
@@ -1062,7 +1041,7 @@ filtragem mais elaborada através do método _POST_, trazendo todas as informaç
 import requests
 import json
 
-url = "http://18.117.254.84/producao/filtragem"
+url = "http://127.0.0.1:8000/producao/filtragem"
 
 payload = json.dumps({
   "categoria": "VINHO DE MESA",
@@ -1096,7 +1075,7 @@ pelo id para possíveis alterações através do método _PUT_.
 import requests
 import json
 
-url = "http://18.117.254.84/producao/2757"
+url = "http://127.0.0.1:8000/producao/2757"
 
 payload = json.dumps({
   "nome": "Tinto",
@@ -1128,7 +1107,7 @@ através do id com o método _DELETE_.
 ```py
 import requests
 
-url = "http://18.117.254.84/producao/2761"
+url = "http://127.0.0.1:8000/producao/2761"
 
 payload={}
 headers = {
