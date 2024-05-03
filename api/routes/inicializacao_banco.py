@@ -127,66 +127,6 @@ async def total_processamento(
     """
 
     try:
-
-        # lista_json_insercao = [
-        #
-        #     {
-        #         'nome_tabela': 'comercializacao',
-        #         'nome_coluna': 'produto',
-        #         'drop_table': None,
-        #         'lista_links': [
-        #             {'super_categoria': None, 'url': os.environ.get('URL_COMERCIALIZACAO')},
-        #         ],
-        #         'separador': ';'
-        #     },
-        #     {
-        #         'nome_tabela': 'exportacao',
-        #         'nome_coluna': 'pais',
-        #         'drop_table': None,
-        #         'lista_links': [
-        #             {'super_categoria': 'Vinho_Mesa', 'url': os.environ.get('URL_EXPORTACAO_VINHOS_MESA')},
-        #             {'super_categoria': 'Espumante', 'url': os.environ.get('URL_EXPORTACAO_ESPUMANTE')},
-        #             {'super_categoria': 'Uvas_frescas', 'url': os.environ.get('URL_EXPORTACAO_UVAS_FRESCAS')},
-        #             {'super_categoria': 'Suco_uva', 'url': os.environ.get('URL_EXPORTACAO_SUCO_UVA')},
-        #         ],
-        #         'separador': ';'
-        #     },
-        #     {
-        #         'nome_tabela': 'importacao',
-        #         'nome_coluna': 'pais',
-        #         'drop_table': None,
-        #         'lista_links': [
-        #             {'super_categoria': 'Vinho_Mesa', 'url': os.environ.get('URL_IMPORTACAO_VINHOS_MESA')},
-        #             {'super_categoria': 'Espumante', 'url': os.environ.get('URL_IMPORTACAO_ESPUMANTE')},
-        #             {'super_categoria': 'Uvas_frescas', 'url': os.environ.get('URL_IMPORTACAO_UVAS_FRESCAS')},
-        #             {'super_categoria': 'Uvas_passas', 'url': os.environ.get('URL_IMPORTACAO_UVAS_PASSAS')},
-        #             {'super_categoria': 'Suco_uva', 'url': os.environ.get('URL_IMPORTACAO_SUCO_UVA')},
-        #         ],
-        #         'separador': ';'
-        #     },
-        #     {
-        #         'nome_tabela': 'processamento',
-        #         'nome_coluna': 'cultivar',
-        #         'drop_table': 'control',
-        #         'lista_links': [
-        #             {'super_categoria': 'Viniferas', 'url': os.environ.get('URL_PROCESSAMENTO_VINIFERAS')},
-        #             {'super_categoria': 'Americana', 'url': os.environ.get('URL_PROCESSAMENTO_AMERICANAS')},
-        #             {'super_categoria': 'Mesa', 'url': os.environ.get('URL_PROCESSAMENTO_MESA')},
-        #             {'super_categoria': 'Outras', 'url': os.environ.get('URL_PROCESSAMENTO_OUTRAS')},
-        #         ],
-        #         'separador': '\t'
-        #     },
-        #     {
-        #         'nome_tabela': 'producao',
-        #         'nome_coluna': 'produto',
-        #         'drop_table': None,
-        #         'lista_links': [
-        #             {'super_categoria': None, 'url': os.environ.get('URL_PRODUCAO')},
-        #         ],
-        #         'separador': ';'
-        #     },
-        # ]
-
         url_base = "http://vitibrasil.cnpuv.embrapa.br/index.php"  # URL base do site
 
         categorias = {
