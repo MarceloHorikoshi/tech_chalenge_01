@@ -93,7 +93,7 @@ class ProcessamentoBase(BaseModel):
     sub_categoria: Optional[str] = Field(None, alias="sub_categoria")
     nome: Optional[str] = Field(None, alias="nome")
     ano: Optional[str] = Field(None, alias="ano")
-    valor_producao: Optional[float] = Field(None, alias="valor_producao")
+    valor_processamento: Optional[float] = Field(None, alias="valor_processamento")
 
 
 class ProducaoBase(BaseModel):

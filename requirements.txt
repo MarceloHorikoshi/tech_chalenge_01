@@ -6,6 +6,7 @@ pymysql==1.1.0
 bcrypt==4.0.1
 passlib==1.7.4
 python-jose==3.3.0
+cryptography==42.0.5
 
 # dataframe
 openpyxl==3.1.1
@@ -35,9 +36,14 @@ httpx==0.26.0
 pytest==8.1.1
 pytest-html==4.1.1 # pytest tests --html="HTMLPytestReport.html"
 
+#web scraping
+selenium==4.20.0
+beautifulsoup4==4.12.3
+
 # cobertura de testes:
 coverage==7.4.4 # coverage run -m pytest
 pytest-cov==5.0.0 # coverage html
+
 
 # Documentação:
 # sphinx==7.3.7

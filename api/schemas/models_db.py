@@ -100,7 +100,7 @@ class Producao(Base):
         categoria (str): Categoria do produto.
         nome (str): Nome do produto.
         ano (str): Ano dos dados.
-        valor_producao (float): Valor do processamento.
+        valor_producao (float): Valor da produção.
     """
 
     __tablename__ = 'producao'
