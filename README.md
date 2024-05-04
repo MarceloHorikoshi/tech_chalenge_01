@@ -10,7 +10,7 @@ em python para desenvolvimento de APIs.
 A API consegue popular um banco de dados MySQL com dados da 
 [EMBRAPA](http://vitibrasil.cnpuv.embrapa.br/index.php?opcao=opt_01) 
 a partir de dados extraídos das tabelas, **'Produção'**, **'Processamento'**, **'Comercialização'**, 
-**'Importação'** e **'Exportação'**.
+**'Importação'** e **'Exportação'**, utilizando tecnicas de web scraping.
 
 Além disso é possível realizar um CRUD completo (Create, Read, Update e Delete) através dos endpoints 
 referentes a cada uma dos tipos de tabelas.
@@ -1092,7 +1092,6 @@ response = requests.request("PUT", url, headers=headers, data=payload)
 
 print(response.text)
 
-
 ```
 
 ### DELETE
@@ -1118,8 +1117,10 @@ response = requests.request("DELETE", url, headers=headers, data=payload)
 
 print(response.text)
 
-
-
 ```
+
+# Contato:
+
+Em caso de dúvidas ou mesmo para demonstrar o funcionamento do código, pode entrar em contato comigo através do linkedin abaixo:
 
 [Linkedin-Marcelo](https://www.linkedin.com/in/marcelohorikoshi/)
