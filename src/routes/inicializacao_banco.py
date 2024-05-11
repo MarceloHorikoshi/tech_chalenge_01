@@ -1,18 +1,18 @@
-from api.schemas import models_db as models
+from src.models import models_db as models
 import os
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.dependencies.database import SessionLocal
+from src.dependencies.database import SessionLocal
 
-from api.services.authentication import get_current_user
-from api.services.funcionalidades_banco import insercao_dados, limpa_tabela
-from api.services.tratamento_dados_tabela import transformar_em_formato, dataframe_para_json
-from api.dependencies.importacao_dados import download_tabela, leitura_bytes
-from api.services.tratamento_dados_tabela import trata_df_sem_colunas
-from api.dependencies.web_scraping import criar_lista_json, encontrar_urls_csv
+from src.services.authentication import get_current_user
+from src.services.funcionalidades_banco import insercao_dados, limpa_tabela
+from src.services.tratamento_dados_tabela import transformar_em_formato, dataframe_para_json
+from src.dependencies.importacao_dados import download_tabela, leitura_bytes
+from src.services.tratamento_dados_tabela import trata_df_sem_colunas
+from src.dependencies.web_scraping import criar_lista_json, encontrar_urls_csv
 from dotenv import load_dotenv
 
 load_dotenv()

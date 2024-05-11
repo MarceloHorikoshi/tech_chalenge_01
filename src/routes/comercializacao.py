@@ -1,14 +1,14 @@
-from api.schemas import models_db as models
+from src.models import models_db as models
 import os
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas.models_db import Comercializacao
-from api.dependencies.database import SessionLocal
-from api.schemas.models_api import ComercializacaoBase
-from api.services.authentication import get_current_user
+from src.models.models_db import Comercializacao
+from src.dependencies.database import SessionLocal
+from src.models.api.model_comercializacao_api import ComercializacaoBase, ComercializacaoInsert
+from src.services.authentication import get_current_user
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -138,7 +138,7 @@ async def filtrar_comercializacao(
 
 @router.post('/comercializacao', status_code=status.HTTP_201_CREATED)
 async def insere_comercializacao(
-        comercializacao: ComercializacaoBase,
+        comercializacao: ComercializacaoInsert,
         db: db_dependency
 ):
     """
@@ -179,7 +179,7 @@ async def insere_comercializacao(
 @router.put('/comercializacao/{id_comercializacao}', status_code=status.HTTP_204_NO_CONTENT)
 async def altera_comercializacao(
         id_comercializacao: int,
-        comercializacao: ComercializacaoBase,
+        comercializacao: ComercializacaoInsert,
         db: db_dependency
 ):
     """

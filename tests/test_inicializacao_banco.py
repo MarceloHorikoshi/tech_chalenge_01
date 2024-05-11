@@ -29,8 +29,8 @@ def test_get_db():
     assert str(type(db)) == expected_output
 
 
-@patch('api.dependencies.database.SessionLocal', MagicMock())
-@patch('api.services.funcionalidades_banco.insercao_dados', MagicMock())
+@patch('src.dependencies.database.SessionLocal', MagicMock())
+@patch('src.services.funcionalidades_banco.insercao_dados', MagicMock())
 def test_total_processamento():
     response = client.get("/inicializacao", headers=headers)
     assert response.status_code == 201

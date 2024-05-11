@@ -1,19 +1,18 @@
+from src.models import models_db as models
 import os
-
-from api.schemas import models_db as models
 
 from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas.models_db import Importacao
-from api.dependencies.database import SessionLocal
-from api.schemas.models_api import ImportacaoBase
-from api.services.authentication import get_current_user
+from src.models.models_db import Exportacao
+from src.dependencies.database import SessionLocal
+from src.models.api.model_exportacao_api import ExportacaoBase, ExportacaoInsert
+from src.services.authentication import get_current_user
 
 
 router = APIRouter(
-    tags=['Importacao'],
+    tags=['Exportacao'],
     dependencies=[Depends(get_current_user)],
     responses={401: {'detail': os.environ.get('ERRO_401')}}
 )
@@ -31,16 +30,16 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[Session, Depends(get_current_user)]
 
 
-@router.get('/importacao/{id_importacao}', status_code=status.HTTP_200_OK)
-async def importacao_id(
-        id_importacao: int,
+@router.get('/exportacao/{id_exportacao}', status_code=status.HTTP_200_OK)
+async def exportacao_id(
+        id_exportacao: int,
         db: db_dependency
 ):
     """
-    Obtém um item da tabela de importacao pelo ID.
+    Obtém um item da tabela de exportacao pelo ID.
 
     Args:
-        id_importacao (int): O ID da importacao.
+        id_exportacao (int): O ID da exportacao.
         db: Sessão do banco de dados.
 
     Returns:
@@ -48,26 +47,26 @@ async def importacao_id(
             ou gera HTTP_404_NOT_FOUND se não encontrado.
     """
 
-    importacao = db.query(models.Importacao).filter(models.Importacao.id == id_importacao).first()
+    exportacao = db.query(models.Exportacao).filter(models.Exportacao.id == id_exportacao).first()
 
-    if importacao is None:
+    if exportacao is None:
         raise HTTPException(status_code=404, detail=os.environ.get('ERRO_404'))
 
-    return importacao
+    return exportacao
 
 
-@router.get('/importacao', status_code=status.HTTP_200_OK)
-async def total_importacao(
+@router.get('/exportacao', status_code=status.HTTP_200_OK)
+async def total_exportacao(
         db: db_dependency
 ):
     """
-    Obtém todos os dados da tabela de importacao.
+    Obtém todos os dados da tabela de exportacao.
 
     Args:
         db: Sessão do banco de dados.
 
     Returns:
-        list[Importacao]: Uma lista de objetos Importacao.
+        list[Exportacao]: Uma lista de objetos Exportacao.
 
     Raises:
         HTTPException: Com status code 500 se houver um erro ao obter os dados.
@@ -75,24 +74,23 @@ async def total_importacao(
 
     try:
         # retorna todas as linhas da tabela
-        return db.query(models.Importacao).all()
+        return db.query(models.Exportacao).all()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=500, detail="Erro ao obter os dados da tabela")
 
 
-@router.post('/importacao/filtragem')
-async def filtrar_importacao(
-        importacao: ImportacaoBase,
+@router.post('/exportacao/filtragem')
+async def filtrar_exportacao(
+        exportacao: ExportacaoBase,
         db: db_dependency
 ):
-
     """
-    Filtra dados da tabela de importacao com base nos critérios fornecidos.
+    Filtra dados da tabela de exportacao com base nos critérios fornecidos.
     Necessário passar pelo menos um dos parâmetros para retornar algo.
 
     Args:
-        importacao (ImportacaoBase): Objeto com os critérios de filtro.
+        exportacao (ExportacaoBase): Objeto com os critérios de filtro.
             Os campos disponíveis para filtro são:
             * id (int, optional): ID único da entrada.
             * categoria (str, optional): Categoria do produto.
@@ -103,38 +101,38 @@ async def filtrar_importacao(
         db: Sessão do banco de dados.
 
     Returns:
-        list[Importacao]: Uma lista de objetos Importacao que correspondem aos filtros.
+        list[Exportacao]: Uma lista de objetos Exportacao que correspondem aos filtros.
 
     Raises:
         HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
     """
 
     try:
-        query = db.query(models.Importacao)
+        query = db.query(models.Exportacao)
 
         # Adiciona filtro pelo ID se fornecido
-        if importacao.id is not None:
-            query = query.filter(models.Importacao.id == importacao.id)
+        if exportacao.id is not None:
+            query = query.filter(models.Exportacao.id == exportacao.id)
 
         # Adiciona filtro pela categoria se fornecida
-        if importacao.categoria is not None:
-            query = query.filter(models.Importacao.categoria == importacao.categoria)
+        if exportacao.categoria is not None:
+            query = query.filter(models.Exportacao.categoria == exportacao.categoria)
 
         # Adiciona filtro pelo nome se fornecido
-        if importacao.nome is not None:
-            query = query.filter(models.Importacao.nome == importacao.nome)
+        if exportacao.nome is not None:
+            query = query.filter(models.Exportacao.nome == exportacao.nome)
 
         # Adiciona filtro pelo ano se fornecido
-        if importacao.ano is not None:
-            query = query.filter(models.Importacao.ano == importacao.ano)
+        if exportacao.ano is not None:
+            query = query.filter(models.Exportacao.ano == exportacao.ano)
 
         # Adiciona filtro pelo valor de produção se fornecido
-        if importacao.quantidade is not None:
-            query = query.filter(models.Importacao.quantidade == importacao.quantidade)
+        if exportacao.quantidade is not None:
+            query = query.filter(models.Exportacao.quantidade == exportacao.quantidade)
 
         # Adiciona filtro pelo valor de produção se fornecido
-        if importacao.valor is not None:
-            query = query.filter(models.Importacao.valor == importacao.valor)
+        if exportacao.valor is not None:
+            query = query.filter(models.Exportacao.valor == exportacao.valor)
 
         # Executa a consulta e retorna os resultados
         return query.all()
@@ -144,17 +142,18 @@ async def filtrar_importacao(
         raise HTTPException(status_code=500, detail="Erro ao filtrar os dados de produção")
 
 
-@router.post('/importacao', status_code=status.HTTP_201_CREATED)
-async def insere_importacao(
-        comercializacao: ImportacaoBase,
+@router.post('/exportacao', status_code=status.HTTP_201_CREATED)
+async def insere_exportacao(
+        comercializacao: ExportacaoInsert,
         db: db_dependency
 ):
+
     """
-    Insere dados da tabela de importacao com base nos critérios fornecidos.
+    Insere dados da tabela de exportacao com base nos critérios fornecidos.
     Necessário passar pelo menos um dos parâmetros para retornar algo.
 
     Args:
-        importacao (ImportacaoBase): Objeto com os critérios de filtro.
+        exportacao (ExportacaoBase): Objeto com os critérios de filtro.
             Os campos disponíveis para filtro são:
             * categoria (str, optional): Categoria do produto.
             * nome (str, optional): Nome do produto.
@@ -164,13 +163,14 @@ async def insere_importacao(
         db: Sessão do banco de dados.
 
     Returns:
-        list[Importacao]: Uma lista de objetos Importacao que correspondem aos filtros.
+        list[Exportacao]: Uma lista de objetos Exportacao que correspondem aos filtros.
 
     Raises:
         HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
     """
 
-    create_importacao_model = Importacao(
+
+    create_exportacao_model = Exportacao(
         categoria=comercializacao.categoria,
         nome=comercializacao.nome,
         ano=comercializacao.ano,
@@ -178,26 +178,26 @@ async def insere_importacao(
         valor=comercializacao.valor
     )
 
-    db.add(create_importacao_model)
+    db.add(create_exportacao_model)
     db.commit()
 
-    db.refresh(create_importacao_model)
+    db.refresh(create_exportacao_model)
 
-    return {'id': create_importacao_model.id}
+    return {'id': create_exportacao_model.id}
 
 
-@router.put('/importacao/{id_importacao}', status_code=status.HTTP_204_NO_CONTENT)
-async def altera_importacao(
-        id_importacao: int,
-        importacao: ImportacaoBase,
+@router.put('/exportacao/{id_exportacao}', status_code=status.HTTP_204_NO_CONTENT)
+async def altera_exportacao(
+        id_exportacao: int,
+        exportacao: ExportacaoInsert,
         db: db_dependency
 ):
     """
-    Altera os dados referentes a um item existente na tabela de importacao.
+    Altera os dados referentes a um item existente na tabela de exportacao.
 
     Args:
-        id_importacao (int): O ID da importacao a ser alterada.
-        importacao (ImportacaoBase): Objeto com os critérios de filtro.
+        id_exportacao (int): O ID da exportacao a ser alterada.
+        exportacao (ExportacaoBase): Objeto com os critérios de filtro.
             Os campos disponíveis para filtro são:
             * categoria (str, optional): Categoria do produto.
             * nome (str, optional): Nome do produto.
@@ -207,23 +207,23 @@ async def altera_importacao(
         db: Sessão do banco de dados.
 
     Returns:
-        list[Importacao]: Uma lista de objetos Importacao que correspondem aos filtros.
+        list[Exportacao]: Uma lista de objetos Exportacao que correspondem aos filtros.
 
     Raises:
         HTTPException: Com status code 500 se houver um erro ao filtrar os dados.
     """
 
     # Busca o item no banco de dados pelo ID
-    importacao_model = db.query(Importacao).filter(Importacao.id == id_importacao).first()
-    if importacao_model is None:
+    exportacao_model = db.query(Exportacao).filter(Exportacao.id == id_exportacao).first()
+    if exportacao_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
 
     # Atualiza os campos do objeto com os novos valores
-    importacao_model.categoria = importacao.categoria
-    importacao_model.nome = importacao.nome
-    importacao_model.ano = importacao.ano
-    importacao_model.quantidade = importacao.quantidade
-    importacao_model.valor = importacao.valor
+    exportacao_model.categoria = exportacao.categoria
+    exportacao_model.nome = exportacao.nome
+    exportacao_model.ano = exportacao.ano
+    exportacao_model.quantidade = exportacao.quantidade
+    exportacao_model.valor = exportacao.valor
 
     # Realiza o commit para persistir as alterações no banco de dados
     db.commit()
@@ -232,27 +232,27 @@ async def altera_importacao(
     return None
 
 
-@router.delete('/importacao/{id_importacao}', status_code=status.HTTP_204_NO_CONTENT)
-async def deleta_importacao(
-        id_importacao: int,
+@router.delete('/exportacao/{id_exportacao}', status_code=status.HTTP_204_NO_CONTENT)
+async def deleta_exportacao(
+        id_exportacao: int,
         db: db_dependency
 ):
     """
-    Deleta um item da tabela de importacao pelo ID.
+    Deleta um item da tabela de exportacao pelo ID.
 
     Args:
-        id_importacao (int): O ID da importacao a ser deletada.
+        id_exportacao (int): O ID da exportacao a ser deletada.
         db: Sessão do banco de dados.
 
     Returns:
         None: Retorna um status HTTP 204 No Content em caso de sucesso.
 
     Raises:
-        HTTPException: Com status code 404 Not Found se a importacao não for encontrada.
+        HTTPException: Com status code 404 Not Found se a exportacao não for encontrada.
     """
 
     # Busca o item no banco de dados pelo ID
-    comercializacao_model = db.query(Importacao).filter(Importacao.id == id_importacao).first()
+    comercializacao_model = db.query(Exportacao).filter(Exportacao.id == id_exportacao).first()
     if comercializacao_model is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=os.environ.get('ERRO_404'))
 

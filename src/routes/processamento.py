@@ -3,11 +3,11 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas import models_db as models
-from api.schemas.models_db import Processamento
-from api.dependencies.database import SessionLocal
-from api.schemas.models_api import ProcessamentoBase
-from api.services.authentication import get_current_user
+from src.models import models_db as models
+from src.models.models_db import Processamento
+from src.dependencies.database import SessionLocal
+from src.models.api.model_processamento_api import ProcessamentoBase, ProcessamentoInsert
+from src.services.authentication import get_current_user
 
 
 router = APIRouter(
@@ -143,7 +143,7 @@ async def filtrar_processamento(
 
 @router.post('/processamento', status_code=status.HTTP_201_CREATED)
 async def insere_processamento(
-        processamento: ProcessamentoBase,
+        processamento: ProcessamentoInsert,
         db: db_dependency
 ):
     """
@@ -186,7 +186,7 @@ async def insere_processamento(
 @router.put('/processamento/{id_processamento}', status_code=status.HTTP_204_NO_CONTENT)
 async def altera_processamento(
         id_processamento: int,
-        processamento: ProcessamentoBase,
+        processamento: ProcessamentoInsert,
         db: db_dependency
 ):
     """

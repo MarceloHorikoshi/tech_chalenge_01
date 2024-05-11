@@ -4,11 +4,11 @@ from fastapi import APIRouter, status, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated
 
-from api.schemas import models_db as models
-from api.schemas.models_db import Producao
-from api.dependencies.database import SessionLocal
-from api.schemas.models_api import ProducaoBase
-from api.services.authentication import get_current_user
+from src.models import models_db as models
+from src.models.models_db import Producao
+from src.dependencies.database import SessionLocal
+from src.models.api.model_producao_api import ProducaoBase, ProducaoInsert
+from src.services.authentication import get_current_user
 
 
 router = APIRouter(
@@ -140,7 +140,7 @@ async def filtrar_producao(
 
 @router.post('/producao', status_code=status.HTTP_201_CREATED)
 async def insere_producao(
-        producao: ProducaoBase,
+        producao: ProducaoInsert,
         db: db_dependency
 ):
     """
@@ -181,7 +181,7 @@ async def insere_producao(
 @router.put('/producao/{id_producao}', status_code=status.HTTP_204_NO_CONTENT)
 async def altera_producao(
         id_producao: int,
-        producao: ProducaoBase,
+        producao: ProducaoInsert,
         db: db_dependency
 ):
     """
