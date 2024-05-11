@@ -4,7 +4,7 @@ from unittest.mock import MagicMock  # Para criar objetos simulados
 from jose import jwt, JWTError
 
 # Importe suas funções e classes relevantes
-from api.schemas.models_db import User
+from api.models.models_db import User
 from api.services.authentication import authenticate_user, create_access_token, get_current_user, bcrypt_context, \
     SECRET_KEY, ALGORITHM
 

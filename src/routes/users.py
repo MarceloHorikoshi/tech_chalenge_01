@@ -7,17 +7,17 @@ from typing import Annotated
 from starlette import status
 from sqlalchemy.orm import Session
 
-from api.schemas import models_db as models
-from api.dependencies.database import SessionLocal
+from src.models import models_db as models
+from src.dependencies.database import SessionLocal
 
-from api.schemas.models_api import CreateUserRequest
-from api.schemas.models_api import Token
-from api.schemas.models_db import User
+from src.models.api.model_user_api import CreateUserRequest
+from src.models.api.models_token_api import Token
+from src.models.models_db import User
 
-from api.services.authentication import authenticate_user
-from api.services.authentication import bcrypt_context
-from api.services.authentication import create_access_token
-from api.services.authentication import get_current_user
+from src.services.authentication import authenticate_user
+from src.services.authentication import bcrypt_context
+from src.services.authentication import create_access_token
+from src.services.authentication import get_current_user
 
 router = APIRouter(
     prefix='/auth',

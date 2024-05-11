@@ -1,4 +1,4 @@
-from api.schemas import models_db as models
+from src.models import models_db as models
 from sqlalchemy import text
 
 

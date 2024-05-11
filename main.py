@@ -1,12 +1,12 @@
 from typing import Annotated
 from fastapi import FastAPI, Depends
 
-from api.schemas import models_db as models
-from api.dependencies.database import engine, SessionLocal
+from src.models import models_db as models
+from src.dependencies.database import engine, SessionLocal
 
 from sqlalchemy.orm import Session
 
-from api.routes import comercializacao, importacao, producao, processamento, inicializacao_banco, users, exportacao
+from src.routes import comercializacao, importacao, producao, processamento, inicializacao_banco, users, exportacao
 
 app = FastAPI(
     title='API-EMBRAPA',
